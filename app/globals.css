@@ -1,0 +1,12 @@
+/* Без Tailwind, только базовые стили */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #020617;
+  color: #ffffff;
+}
