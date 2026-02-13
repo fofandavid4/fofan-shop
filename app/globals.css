@@ -6,7 +6,199 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   background: #020617;
   color: #ffffff;
+}
+
+/* Токены */
+
+:root {
+  --fs-bg-1: #020617;
+  --fs-bg-2: #0f172a;
+  --fs-cyan: #22d3ee;
+  --fs-green: #22c55e;
+  --fs-blue: #3b82f6;
+}
+
+/* Живой фон с мягкими орбами */
+
+.bg-animated {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.25) 0, transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(52, 211, 153, 0.22) 0, transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.22) 0, transparent 55%);
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(40px);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.bg-orb-1 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.9), transparent 70%);
+  top: -60px;
+  left: -40px;
+  animation: orbFloat1 28s ease-in-out infinite alternate;
+}
+
+.bg-orb-2 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.9), transparent 70%);
+  top: 10%;
+  right: -80px;
+  animation: orbFloat2 32s ease-in-out infinite alternate;
+}
+
+.bg-orb-3 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.9), transparent 70%);
+  bottom: -80px;
+  left: 20%;
+  animation: orbFloat3 36s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, 40px, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(80px, -10px, 0) scale(1.05);
+  }
+}
+
+@keyframes orbFloat2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-40px, 20px, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-80px, -20px, 0) scale(1.02);
+  }
+}
+
+@keyframes orbFloat3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(20px, -40px, 0) scale(1.12);
+  }
+  100% {
+    transform: translate3d(-30px, -10px, 0) scale(1.05);
+  }
+}
+
+/* Плавный вход всей страницы */
+
+.page-fade {
+  min-height: 100vh;
+  animation: pageIn 0.7s ease-out;
+}
+
+@keyframes pageIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Лёгкий hover для кнопок */
+
+button {
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+}
+
+/* Мобильные правки, чтобы орбы не мешали */
+
+@media (max-width: 640px) {
+  .bg-orb {
+    filter: blur(48px);
+    opacity: 0.75;
+  }
+
+  .bg-orb-1 {
+    top: -80px;
+    left: -80px;
+  }
+
+  .bg-orb-2 {
+    top: 15%;
+    right: -100px;
+  }
+
+  .bg-orb-3 {
+    bottom: -100px;
+    left: -40px;
+  }
+}
+
+/* Неоновый заголовок и пульс карточки (под FofanShop и Пример сделки) */
+
+@keyframes fsCardGlow {
+  0% {
+    opacity: 0.3;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate3d(4px, -6px, 0) scale(1.03);
+  }
+  100% {
+    opacity: 0.5;
+    transform: translate3d(-4px, 4px, 0) scale(1.02);
+  }
+}
+
+@keyframes fsNeonPulse {
+  0% {
+    text-shadow:
+      0 0 10px rgba(56, 189, 248, 0.7),
+      0 0 24px rgba(56, 189, 248, 0.6),
+      0 0 40px rgba(34, 197, 94, 0);
+  }
+  50% {
+    text-shadow:
+      0 0 16px rgba(56, 189, 248, 1),
+      0 0 36px rgba(56, 189, 248, 0.9),
+      0 0 60px rgba(34, 197, 94, 0.35);
+  }
+  100% {
+    text-shadow:
+      0 0 12px rgba(56, 189, 248, 0.8),
+      0 0 28px rgba(56, 189, 248, 0.7),
+      0 0 46px rgba(34, 197, 94, 0.2);
+  }
 }

@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useState, type CSSProperties } from "react";
+import React, {
+  useState,
+  type CSSProperties,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 
@@ -80,13 +84,15 @@ function Header({ onSellClick }: { onSellClick: () => void }) {
         alignItems: "center",
         justifyContent: "space-between",
         gap: 8,
-        padding: "10px 26px",
+        padding: "10px 16px",
         backgroundColor: "rgba(2,6,23,0.96)",
         borderBottom: "1px solid rgba(148,163,184,0.35)",
         backdropFilter: "blur(16px)",
         position: "sticky",
         top: 0,
         zIndex: 20,
+        flexWrap: "wrap",
+        rowGap: 6,
       }}
     >
       <div
@@ -113,8 +119,21 @@ function Header({ onSellClick }: { onSellClick: () => void }) {
         <button onClick={onSellClick} style={btnPrimary}>
           Продать
         </button>
+
         <a href="/board" style={btnSecondary}>
           Доска объявлений
+        </a>
+
+        <a
+          href="/refund"
+          style={{
+            ...btnSecondary,
+            borderColor: "rgba(248,113,113,0.7)",
+            color: "#fecaca",
+            boxShadow: "0 0 18px rgba(248,113,113,0.45)",
+          }}
+        >
+          Рефаунд
         </a>
       </nav>
 
@@ -123,6 +142,8 @@ function Header({ onSellClick }: { onSellClick: () => void }) {
           display: "flex",
           gap: 8,
           alignItems: "center",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
         }}
       >
         <a
@@ -202,8 +223,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
   const handleAddPhoto = () => {
     if (!pendingFile) return;
-    if (files.length >= 8) {
-      alert("Максимум 8 фото.");
+    if (files.length >= 10) {
+      alert("Максимум 10 фото.");
       return;
     }
     setFiles((prev) => [...prev, pendingFile]);
@@ -218,7 +239,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
     if (step === 0) return !!category;
     if (step === 1) return !!title && !!condition;
     if (step === 2) return !!price;
-    if (step === 3) return files.length >= 3;
+    if (step === 3) return files.length >= 1;
     if (step === 4) return !!city && !!contact;
     return true;
   };
@@ -391,7 +412,11 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
             {step === 1 && (
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
               >
                 <h3 style={{ fontSize: "1rem", margin: 0 }}>
                   Базовая информация
@@ -447,7 +472,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     <select
                       style={inputStyle}
                       value={otherCategory}
-                      onChange={(e) => setOtherCategory(e.target.value)}
+                      onChange={(e) =>
+                        setOtherCategory(e.target.value)
+                      }
                     >
                       <option value="">Выберите</option>
                       <option value="powerbank">Пауэрбанк</option>
@@ -480,7 +507,11 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
             {step === 2 && (
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
               >
                 {condition === "used" && (
                   <>
@@ -555,7 +586,11 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
             {step === 3 && (
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
               >
                 <h3 style={{ fontSize: "1rem", margin: 0 }}>
                   Фотографии товара
@@ -567,7 +602,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     margin: 0,
                   }}
                 >
-                  Загрузите от 3 до 8 фото.
+                  Загрузите от 1 до 10 фото.
                 </p>
 
                 <label
@@ -687,7 +722,11 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
             {step === 4 && (
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
               >
                 <h3 style={{ fontSize: "1rem", margin: 0 }}>
                   Как с вами связаться?
@@ -739,8 +778,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={() => {
                     if (!canGoNext()) {
-                      if (step === 3 && files.length < 3) {
-                        alert("Добавьте минимум 3 фото.");
+                      if (step === 3 && files.length < 1) {
+                        alert("Добавьте хотя бы 1 фото.");
                       }
                       return;
                     }
@@ -789,6 +828,18 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
 export default function Home() {
   const [showSell, setShowSell] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => {
+      if (typeof window !== "undefined") {
+        setIsMobile(window.innerWidth < 768);
+      }
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   return (
     <main
@@ -809,16 +860,19 @@ export default function Home() {
           flexDirection: "column",
           justifyContent: "center",
           gap: 22,
-          padding: "40px 24px",
+          padding: isMobile ? "24px 14px 32px" : "40px 24px",
           maxWidth: 1120,
           margin: "0 auto",
+          boxSizing: "border-box",
         }}
       >
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0,1.3fr) minmax(0,1fr)",
-            gap: 24,
+            gridTemplateColumns: isMobile
+              ? "minmax(0,1fr)"
+              : "minmax(0,1.3fr) minmax(0,1fr)",
+            gap: isMobile ? 18 : 24,
             alignItems: "center",
           }}
         >
@@ -830,6 +884,9 @@ export default function Home() {
                 textTransform: "uppercase",
                 color: "#E0F2FE",
                 marginBottom: 10,
+                textShadow:
+                  "0 0 18px rgba(56,189,248,0.9), 0 0 36px rgba(56,189,248,0.8)",
+                animation: "fsNeonPulse 5s ease-in-out infinite alternate",
               }}
             >
               FofanShop
@@ -855,10 +912,17 @@ export default function Home() {
             >
               <button
                 onClick={() => setShowSell(true)}
-                style={btnPrimary}
+                style={{
+                  ...btnPrimary,
+                  boxShadow:
+                    "0 0 18px rgba(56,189,248,0.9), 0 0 34px rgba(34,197,94,0.7)",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
               >
                 Заполнить анкету
               </button>
+
               <a href="/board" style={btnSecondary}>
                 Смотреть выкупы
               </a>
@@ -894,70 +958,90 @@ export default function Home() {
 
           <div
             style={{
+              position: "relative",
               borderRadius: 24,
               border: "1px solid rgba(148,163,184,0.35)",
               background:
-                "linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
+                "radial-gradient(circle at top left, rgba(56,189,248,0.12), transparent 60%), radial-gradient(circle at bottom right, rgba(34,197,94,0.12), transparent 60%), linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
               boxShadow:
-                "0 22px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)",
-              padding: "16px 18px 18px",
+                "0 24px 70px rgba(15,23,42,0.95), 0 0 40px rgba(56,189,248,0.18)",
+              padding: "18px 20px 20px",
+              overflow: "hidden",
             }}
           >
             <div
               style={{
-                fontSize: "0.8rem",
-                color: "#9CA3AF",
-                marginBottom: 8,
+                position: "absolute",
+                inset: "-30%",
+                background:
+                  "radial-gradient(circle at 0% 0%, rgba(56,189,248,0.16), transparent 60%), radial-gradient(circle at 100% 100%, rgba(34,197,94,0.18), transparent 60%)",
+                opacity: 0.7,
+                pointerEvents: "none",
+                mixBlendMode: "screen",
+                animation: "fsCardGlow 8s ease-in-out infinite alternate",
               }}
-            >
-              Пример сделки
-            </div>
+            />
             <div
               style={{
-                borderRadius: 16,
-                border: "1px solid rgba(30,64,175,0.7)",
-                padding: "10px 12px",
-                background:
-                  "radial-gradient(circle at top, rgba(15,23,42,0.9) 0, rgba(15,23,42,1) 60%)",
-                fontSize: "0.84rem",
+                position: "relative",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 6,
+                  fontSize: "0.8rem",
+                  color: "#9CA3AF",
+                  marginBottom: 8,
                 }}
               >
-                <div>
-                  <div style={{ color: "#e5e7eb" }}>
-                    iPhone 12, 128 ГБ
+                Пример сделки
+              </div>
+              <div
+                style={{
+                  borderRadius: 16,
+                  border: "1px solid rgba(30,64,175,0.7)",
+                  padding: "10px 12px",
+                  background:
+                    "radial-gradient(circle at top, rgba(15,23,42,0.9) 0, rgba(15,23,42,1) 60%)",
+                  fontSize: "0.84rem",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                  }}
+                >
+                  <div>
+                    <div style={{ color: "#e5e7eb" }}>
+                      iPhone 12, 128 ГБ
+                    </div>
+                    <div
+                      style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                    >
+                      Б/у, мелкие царапины
+                    </div>
                   </div>
                   <div
-                    style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                    style={{
+                      textAlign: "right",
+                      fontSize: "0.78rem",
+                      color: "#bbf7d0",
+                    }}
                   >
-                    Б/у, мелкие царапины
+                    Выкуп: 14 000 грн
                   </div>
                 </div>
                 <div
                   style={{
-                    textAlign: "right",
+                    marginTop: 6,
                     fontSize: "0.78rem",
-                    color: "#bbf7d0",
+                    color: "#9CA3AF",
                   }}
                 >
-                  Выкуп: 14 000 грн
+                  Клиент заполнил анкету, отправил фото — мы оценили и
+                  забрали в тот же день.
                 </div>
-              </div>
-              <div
-                style={{
-                  marginTop: 6,
-                  fontSize: "0.78rem",
-                  color: "#9CA3AF",
-                }}
-              >
-                Клиент заполнил анкету, отправил фото — мы оценили и
-                забрали в тот же день.
               </div>
             </div>
           </div>
