@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch, getApiFileUrl } from "@/lib/api";
 
 interface PublicItem {
   id: number;
@@ -19,8 +20,6 @@ const categoryLabels: Record<string, string> = {
   keyboard_mouse: "⌨️ Клавиатура / мышь",
   other: "📦 Другое",
 };
-
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 const chipBase: React.CSSProperties = {
   padding: "6px 14px",
@@ -41,12 +40,6 @@ const chipActive: React.CSSProperties = {
   boxShadow: "0 0 16px rgba(34,197,94,0.45)",
 };
 
-const getFullPhotoUrl = (path: string) => {
-  if (!path) return "";
-  if (path.startsWith("http")) return path;
-  return `${apiBase}${path}`;
-};
-
 export default function BoardPage() {
   const [filter, setFilter] = useState<string | null>(null);
   const [items, setItems] = useState<PublicItem[]>([]);
@@ -58,10 +51,9 @@ export default function BoardPage() {
     setLoading(true);
     try {
       const params = cat ? `?category=${cat}` : "";
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/items/public${params}`
-      );
-      const data = await res.json();
+      const data = await apiFetch<PublicItem[]>({
+        path: `/api/items/public${params}`,
+      });
       setItems(data);
     } catch (e) {
       console.error(e);
@@ -72,7 +64,7 @@ export default function BoardPage() {
   }
 
   useEffect(() => {
-    loadItems(filter);
+    void loadItems(filter);
   }, [filter]);
 
   return (
@@ -190,7 +182,7 @@ export default function BoardPage() {
             {items.map((item) => {
               const hasPhotos = item.photos && item.photos.length > 0;
               const thumbnail = hasPhotos
-                ? getFullPhotoUrl(item.photos![0])
+                ? getApiFileUrl(item.photos![0])
                 : null;
 
               return (
@@ -431,8 +423,8 @@ export default function BoardPage() {
                   }}
                 >
                   <img
-                    src={getFullPhotoUrl(
-                      selected.photos[selectedPhotoIndex] as string
+                    src={getApiFileUrl(
+                      selected.photos[selectedPhotoIndex] as string,
                     )}
                     alt={selected.title}
                     style={{
@@ -473,7 +465,7 @@ export default function BoardPage() {
                         }}
                       >
                         <img
-                          src={getFullPhotoUrl(p)}
+                          src={getApiFileUrl(p)}
                           alt={`photo-${idx + 1}`}
                           style={{
                             width: "100%",

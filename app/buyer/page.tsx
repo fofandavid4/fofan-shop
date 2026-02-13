@@ -6,6 +6,7 @@ import React, {
   type CSSProperties,
   ChangeEvent,
 } from "react";
+import { apiFetch, getApiFileUrl } from "@/lib/api";
 
 type BuyerItem = {
   id: number;
@@ -25,8 +26,6 @@ type BuyerItem = {
   buyer_price: string | null;
   buyer_comment: string | null;
 };
-
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Код скупщика из env (с дефолтом)
 const BUYER_CODE =
@@ -113,8 +112,9 @@ export default function BuyerPage() {
   async function loadItems() {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/api/items/buyer`);
-      const data: BuyerItem[] = await res.json();
+      const data = await apiFetch<BuyerItem[]>({
+        path: "/api/items/buyer",
+      });
       setItems(data);
 
       const p: Record<number, string> = {};
@@ -138,15 +138,9 @@ export default function BuyerPage() {
 
   useEffect(() => {
     if (isAuthorized) {
-      loadItems();
+      void loadItems();
     }
   }, [isAuthorized]);
-
-  const getFullPhotoUrl = (path: string) => {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    return `${apiBase}${path}`;
-  };
 
   async function saveBuyer(id: number) {
     try {
@@ -166,18 +160,13 @@ export default function BuyerPage() {
             : null,
       };
 
-      const res = await fetch(`${apiBase}/api/items/${id}/buyer`, {
+      const updated = await apiFetch<BuyerItem>({
+        path: `/api/items/${id}/buyer`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        alert("Ошибка сохранения ставки");
-        return;
-      }
-
-      const updated: BuyerItem = await res.json();
       setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
 
       setEditPrice((prev) => ({
@@ -194,7 +183,7 @@ export default function BuyerPage() {
       }));
     } catch (e) {
       console.error(e);
-      alert("Сервер недоступен");
+      alert("Сервер недоступен или ошибка сохранения ставки");
     } finally {
       setSavingId(null);
     }
@@ -494,7 +483,7 @@ export default function BuyerPage() {
                   const hasPhoto =
                     item.photos && item.photos.length > 0;
                   const thumb = hasPhoto
-                    ? getFullPhotoUrl(item.photos![0])
+                    ? getApiFileUrl(item.photos![0])
                     : null;
                   const status = editStatus[item.id];
                   const disabledFields = status === "not_interested";
@@ -786,7 +775,7 @@ export default function BuyerPage() {
 
                         <button
                           type="button"
-                          onClick={() => saveBuyer(item.id)}
+                          onClick={() => void saveBuyer(item.id)}
                           disabled={savingId === item.id}
                           style={{
                             marginTop: 4,

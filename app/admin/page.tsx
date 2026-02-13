@@ -35,7 +35,7 @@ const categoryLabel: Record<string, string> = {
   other: "Другое",
 };
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 // ЛОГИН/ПАРОЛЬ ДЛЯ ВХОДА В АДМИНКУ (из env, с дефолтами)
 const ADMIN_LOGIN =
@@ -100,11 +100,14 @@ export default function AdminPage() {
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
 
   async function loadItems() {
+    if (!API_BASE) {
+      alert("API URL не настроен. Обратитесь к администратору.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/items/admin`,
-      );
+      const res = await fetch(`${API_BASE}/api/items/admin`);
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
       setItems(data);
@@ -126,16 +129,18 @@ export default function AdminPage() {
     id: number,
     publish_status: "private" | "public",
   ) {
+    if (!API_BASE) {
+      alert("API URL не настроен. Обратитесь к администратору.");
+      return;
+    }
+
     try {
       setSavingId(id);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/items/${id}/admin`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publish_status }),
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/items/${id}/admin`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publish_status }),
+      });
       if (!res.ok) {
         alert("Ошибка обновления статуса");
         return;
@@ -150,16 +155,18 @@ export default function AdminPage() {
   }
 
   async function deleteItem(id: number) {
+    if (!API_BASE) {
+      alert("API URL не настроен. Обратитесь к администратору.");
+      return;
+    }
+
     if (!window.confirm(`Точно удалить заявку #${id}?`)) return;
 
     try {
       setDeletingId(id);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/items/${id}/admin`,
-        {
-          method: "DELETE",
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/items/${id}/admin`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         alert("Ошибка удаления заявки");
         return;
@@ -176,7 +183,8 @@ export default function AdminPage() {
   const getFullPhotoUrl = (path: string) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    return `${apiBase}${path}`;
+    if (!API_BASE) return path;
+    return `${API_BASE}${path}`;
   };
 
   const renderBuyerStatusLabel = (status?: string | null) => {
@@ -1160,7 +1168,8 @@ export default function AdminPage() {
                     Категория
                   </div>
                   <div>
-                    {categoryLabel[selected.category] ?? selected.category}
+                    {categoryLabel[selected.category] ??
+                      selected.category}
                   </div>
                 </div>
                 <div>
@@ -1281,13 +1290,17 @@ export default function AdminPage() {
                 }}
               >
                 <div>
-                  <div style={{ color: "#9CA3AF", fontSize: "0.78rem" }}>
+                  <div
+                    style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                  >
                     Статус
                   </div>
                   <div>{renderBuyerStatusLabel(selected.buyer_status)}</div>
                 </div>
                 <div>
-                  <div style={{ color: "#9CA3AF", fontSize: "0.78rem" }}>
+                  <div
+                    style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                  >
                     Цена скупщика
                   </div>
                   <div>
@@ -1299,7 +1312,9 @@ export default function AdminPage() {
               </div>
               {selected.buyer_comment && (
                 <div style={{ marginTop: 8 }}>
-                  <div style={{ color: "#9CA3AF", fontSize: "0.78rem" }}>
+                  <div
+                    style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                  >
                     Комментарий скупщика
                   </div>
                   <p

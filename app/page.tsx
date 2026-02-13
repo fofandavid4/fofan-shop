@@ -2,6 +2,7 @@
 
 import React, { useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
 const btnPrimary: CSSProperties = {
   padding: "9px 20px",
@@ -252,23 +253,16 @@ function SellWizard({ onClose }: { onClose: () => void }) {
         formData.append("images", file);
       });
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/items`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-
-      if (!res.ok) {
-        alert("Ошибка отправки. Попробуйте ещё раз.");
-        return;
-      }
+      await apiFetch({
+        path: "/api/items",
+        method: "POST",
+        body: formData,
+      });
 
       setSubmitted(true);
     } catch (e) {
       console.error(e);
-      alert("Сервер недоступен. Убедитесь, что запущен node server.js");
+      alert("Ошибка отправки или сервер недоступен. Попробуйте ещё раз.");
     }
   };
 
@@ -538,7 +532,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         }}
                         placeholder="Царапины, не держит батарея..."
                         value={problemsDesc}
-                        onChange={(e) => setProblemsDesc(e.target.value)}
+                        onChange={(e) =>
+                          setProblemsDesc(e.target.value)
+                        }
                       />
                     </div>
                   </>
@@ -769,7 +765,13 @@ function SellWizard({ onClose }: { onClose: () => void }) {
             <h3 style={{ color: "#22c55e", marginBottom: 6 }}>
               ✅ Заявка отправлена!
             </h3>
-            <p style={{ color: "#9CA3AF", fontSize: "0.9rem", margin: 0 }}>
+            <p
+              style={{
+                color: "#9CA3AF",
+                fontSize: "0.9rem",
+                margin: 0,
+              }}
+            >
               Мы свяжемся с вами после оценки.
             </p>
             <button
@@ -928,8 +930,12 @@ export default function Home() {
                 }}
               >
                 <div>
-                  <div style={{ color: "#e5e7eb" }}>iPhone 12, 128 ГБ</div>
-                  <div style={{ color: "#9CA3AF", fontSize: "0.78rem" }}>
+                  <div style={{ color: "#e5e7eb" }}>
+                    iPhone 12, 128 ГБ
+                  </div>
+                  <div
+                    style={{ color: "#9CA3AF", fontSize: "0.78rem" }}
+                  >
                     Б/у, мелкие царапины
                   </div>
                 </div>
@@ -950,8 +956,8 @@ export default function Home() {
                   color: "#9CA3AF",
                 }}
               >
-                Клиент заполнил анкету, отправил фото — мы оценили и забрали в
-                тот же день.
+                Клиент заполнил анкету, отправил фото — мы оценили и
+                забрали в тот же день.
               </div>
             </div>
           </div>
