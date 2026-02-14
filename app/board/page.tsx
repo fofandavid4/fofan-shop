@@ -12,7 +12,7 @@ interface PublicItem {
   price_client: string | null;
   city: string | null;
   deal_status: string;
-  photos?: string[];
+  photos?: string[] | null;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -99,7 +99,7 @@ export default function BoardPage() {
       const data = await apiFetch<PublicItem[]>({
         path: `/api/items/public${params}`,
       });
-      setItems(data);
+      setItems(data ?? []);
     } catch (e) {
       console.error(e);
       alert("Не удалось загрузить объявления");
@@ -186,7 +186,9 @@ export default function BoardPage() {
             </button>
             <button
               style={
-                filter === "keyboard_mouse" ? chipActive : chipBase
+                filter === "keyboard_mouse"
+                  ? chipActive
+                  : chipBase
               }
               onClick={() => setFilter("keyboard_mouse")}
             >
@@ -223,10 +225,12 @@ export default function BoardPage() {
               }}
             >
               {items.map((item) => {
-                const hasPhotos =
-                  item.photos && item.photos.length > 0;
+                const photos = Array.isArray(item.photos)
+                  ? item.photos
+                  : [];
+                const hasPhotos = photos.length > 0;
                 const thumbnail = hasPhotos
-                  ? getApiFileUrl(item.photos[0]!)
+                  ? getApiFileUrl(photos[0])
                   : null;
 
                 return (
@@ -234,7 +238,8 @@ export default function BoardPage() {
                     key={item.id}
                     style={{
                       borderRadius: 20,
-                      border: "1px solid rgba(148,163,184,0.32)",
+                      border:
+                        "1px solid rgba(148,163,184,0.32)",
                       background:
                         "radial-gradient(circle at top left, rgba(248,113,113,0.16), transparent 55%), rgba(7,10,20,0.98)",
                       padding: "11px 11px 13px",
@@ -247,16 +252,20 @@ export default function BoardPage() {
                         "transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out",
                     }}
                     onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.transform = "translateY(-2px) scale(1.01)";
+                      const el =
+                        e.currentTarget as HTMLDivElement;
+                      el.style.transform =
+                        "translateY(-2px) scale(1.01)";
                       el.style.boxShadow =
                         "0 24px 60px rgba(0,0,0,0.96), 0 0 0 1px rgba(248,113,113,0.6)";
                       el.style.borderColor =
                         "rgba(248,113,113,0.7)";
                     }}
                     onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.transform = "translateY(0) scale(1)";
+                      const el =
+                        e.currentTarget as HTMLDivElement;
+                      el.style.transform =
+                        "translateY(0) scale(1)";
                       el.style.boxShadow =
                         "0 18px 40px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)";
                       el.style.borderColor =
@@ -296,7 +305,8 @@ export default function BoardPage() {
                           display: "inline-block",
                           padding: "2px 8px",
                           borderRadius: 999,
-                          background: "rgba(127,29,29,0.32)",
+                          background:
+                            "rgba(127,29,29,0.32)",
                           fontSize: "0.7rem",
                           color: "#fecaca",
                           marginBottom: 4,
@@ -339,7 +349,9 @@ export default function BoardPage() {
                         }}
                       >
                         {item.price_client ? (
-                          <strong style={{ color: "#22c55e" }}>
+                          <strong
+                            style={{ color: "#22c55e" }}
+                          >
                             {item.price_client} грн
                           </strong>
                         ) : (
@@ -366,7 +378,8 @@ export default function BoardPage() {
                         marginTop: 8,
                         padding: "7px 14px",
                         borderRadius: 999,
-                        border: "1px solid rgba(148,163,184,0.6)",
+                        border:
+                          "1px solid rgba(148,163,184,0.6)",
                         background:
                           "radial-gradient(circle at top, rgba(148,163,184,0.22), transparent 60%), rgba(15,23,42,0.98)",
                         color: "#e5e7eb",
@@ -379,7 +392,8 @@ export default function BoardPage() {
                       onMouseEnter={(e) => {
                         const el =
                           e.currentTarget as HTMLButtonElement;
-                        el.style.transform = "translateY(-1px)";
+                        el.style.transform =
+                          "translateY(-1px)";
                         el.style.boxShadow =
                           "0 12px 30px rgba(15,23,42,0.9)";
                         el.style.borderColor =
@@ -494,7 +508,8 @@ export default function BoardPage() {
                   style={{
                     background: "none",
                     borderRadius: 999,
-                    border: "1px solid rgba(148,163,184,0.7)",
+                    border:
+                      "1px solid rgba(148,163,184,0.7)",
                     color: "#9CA3AF",
                     cursor: "pointer",
                     fontSize: "0.9rem",
@@ -506,7 +521,8 @@ export default function BoardPage() {
                   onMouseEnter={(e) => {
                     const el =
                       e.currentTarget as HTMLButtonElement;
-                    el.style.transform = "translateY(-1px)";
+                    el.style.transform =
+                      "translateY(-1px)";
                     el.style.boxShadow =
                       "0 10px 30px rgba(15,23,42,0.9)";
                   }}
@@ -521,81 +537,85 @@ export default function BoardPage() {
                 </button>
               </div>
 
-              {selected.photos && selected.photos.length > 0 && (
-                <div style={{ margin: "8px 0 12px" }}>
-                  <div
-                    style={{
-                      width: "100%",
-                      aspectRatio: "4 / 3",
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      border: "1px solid rgba(248,113,113,0.7)",
-                      backgroundColor: "#020617",
-                      marginBottom: 8,
-                      boxShadow:
-                        "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
-                    }}
-                  >
-                    <img
-                      src={getApiFileUrl(
-                        selected.photos[selectedPhotoIndex] as string,
-                      )}
-                      alt={selected.title}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        display: "block",
-                      }}
-                    />
-                  </div>
-                  {selected.photos.length > 1 && (
+              {Array.isArray(selected.photos) &&
+                selected.photos.length > 0 && (
+                  <div style={{ margin: "8px 0 12px" }}>
                     <div
                       style={{
-                        display: "flex",
-                        gap: 6,
-                        overflowX: "auto",
-                        paddingBottom: 4,
+                        width: "100%",
+                        aspectRatio: "4 / 3",
+                        borderRadius: 16,
+                        overflow: "hidden",
+                        border:
+                          "1px solid rgba(248,113,113,0.7)",
+                        backgroundColor: "#020617",
+                        marginBottom: 8,
+                        boxShadow:
+                          "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
                       }}
                     >
-                      {selected.photos.map((p, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() =>
-                            setSelectedPhotoIndex(idx)
-                          }
-                          style={{
-                            width: 62,
-                            height: 62,
-                            borderRadius: 12,
-                            overflow: "hidden",
-                            border:
-                              idx === selectedPhotoIndex
-                                ? "1px solid #22c55e"
-                                : "1px solid rgba(148,163,184,0.5)",
-                            padding: 0,
-                            background: "transparent",
-                            cursor: "pointer",
-                            flex: "0 0 auto",
-                          }}
-                        >
-                          <img
-                            src={getApiFileUrl(p)}
-                            alt={`photo-${idx + 1}`}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                          />
-                        </button>
-                      ))}
+                      <img
+                        src={getApiFileUrl(
+                          selected.photos[
+                            selectedPhotoIndex
+                          ] as string,
+                        )}
+                        alt={selected.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          display: "block",
+                        }}
+                      />
                     </div>
-                  )}
-                </div>
-              )}
+                    {selected.photos.length > 1 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          overflowX: "auto",
+                          paddingBottom: 4,
+                        }}
+                      >
+                        {selected.photos.map((p, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() =>
+                              setSelectedPhotoIndex(idx)
+                            }
+                            style={{
+                              width: 62,
+                              height: 62,
+                              borderRadius: 12,
+                              overflow: "hidden",
+                              border:
+                                idx === selectedPhotoIndex
+                                  ? "1px solid #22c55e"
+                                  : "1px solid rgba(148,163,184,0.5)",
+                              padding: 0,
+                              background: "transparent",
+                              cursor: "pointer",
+                              flex: "0 0 auto",
+                            }}
+                          >
+                            <img
+                              src={getApiFileUrl(p)}
+                              alt={`photo-${idx + 1}`}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                display: "block",
+                              }}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
               <p
                 style={{
@@ -646,7 +666,8 @@ export default function BoardPage() {
                   marginTop: 4,
                   padding: "10px 14px",
                   borderRadius: 14,
-                  border: "1px solid rgba(248,113,113,0.35)",
+                  border:
+                    "1px solid rgba(248,113,113,0.35)",
                   background:
                     "radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(2,6,23,1))",
                 }}
