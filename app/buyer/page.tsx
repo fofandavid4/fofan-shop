@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
   type CSSProperties,
-  ChangeEvent,
+  type ChangeEvent,
 } from "react";
 import { apiFetch, getApiFileUrl } from "@/lib/api";
 
@@ -27,7 +27,7 @@ type BuyerItem = {
   buyer_comment: string | null;
 };
 
-// Код скупщика из env (с дефолтом)
+// код скупщика из env
 const BUYER_CODE =
   process.env.NEXT_PUBLIC_BUYER_CODE || "fofan-buyer-2024";
 
@@ -56,6 +56,8 @@ const chipStatus = (
     color: active ? activeColor : "#e5e7eb",
     fontSize: "0.8rem",
     cursor: "pointer",
+    transition:
+      "border-color 0.16s ease-out, background 0.16s ease-out, color 0.16s ease-out, transform 0.16s ease-out, box-shadow 0.16s ease-out",
   };
 };
 
@@ -76,13 +78,56 @@ const inputBase: CSSProperties = {
 const btnPrimary: CSSProperties = {
   padding: "8px 18px",
   borderRadius: 999,
-  border: "none",
-  background: "linear-gradient(90deg,#38bdf8,#22c55e)",
+  border: "1px solid rgba(248,113,113,0.9)",
+  background:
+    "linear-gradient(120deg, #f97373 0%, #fb923c 35%, #facc15 70%, #f97373 100%)",
   color: "#020617",
   cursor: "pointer",
   fontSize: "0.9rem",
   fontWeight: 600,
-  boxShadow: "0 0 18px rgba(56,189,248,0.55)",
+  boxShadow: "0 18px 40px rgba(127,29,29,0.8)",
+  transition: "transform 0.16s ease-out, box-shadow 0.16s ease-out",
+};
+
+const pageWrap: CSSProperties = {
+  minHeight: "100vh",
+  backgroundColor: "#050208",
+  backgroundImage:
+    "radial-gradient(circle at 0% 0%, rgba(248,113,113,0.22) 0, transparent 55%), radial-gradient(circle at 100% 0%, rgba(251,191,36,0.18) 0, transparent 55%), radial-gradient(circle at 50% 100%, rgba(127,29,29,0.28) 0, transparent 55%)",
+  color: "#ffffff",
+  padding: "20px 16px 32px",
+  fontFamily:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
+const shellCard: CSSProperties = {
+  maxWidth: 1120,
+  margin: "0 auto",
+  borderRadius: 28,
+  padding: "18px 18px 20px",
+  border: "1px solid rgba(248,113,113,0.5)",
+  background:
+    "linear-gradient(135deg, rgba(7,10,20,0.98), rgba(15,23,42,0.94))",
+  boxShadow:
+    "0 30px 80px rgba(0,0,0,0.96), 0 0 55px rgba(15,23,42,0.9)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const shellGlow: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  borderRadius: 28,
+  border: "1px solid transparent",
+  background:
+    "linear-gradient(120deg, rgba(248,113,113,0.9), rgba(251,191,36,0.65), rgba(248,113,113,0.9)) border-box",
+  WebkitMask:
+    "linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0)",
+  WebkitMaskComposite: "xor",
+  pointerEvents: "none",
+  opacity: 0.45,
 };
 
 type StatusFilter = "all" | "interested" | "not_interested" | "none";
@@ -97,13 +142,11 @@ export default function BuyerPage() {
   const [editStatus, setEditStatus] = useState<Record<number, string>>({});
   const [editComment, setEditComment] = useState<Record<number, string>>({});
 
-  // Локальный вход по коду
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authError, setAuthError] = useState("");
 
-  // Поиск / фильтр / сортировка
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("all");
@@ -198,13 +241,12 @@ export default function BuyerPage() {
     }
   };
 
-  // Фильтрация и сортировка списка карточек
   const normalizedSearch = search.trim().toLowerCase();
 
   const filteredItems = items.filter((item) => {
-    // Статус
     const currentStatus = item.buyer_status || "";
     let matchesStatus = true;
+
     if (statusFilter === "interested") {
       matchesStatus = currentStatus === "interested";
     } else if (statusFilter === "not_interested") {
@@ -213,7 +255,6 @@ export default function BuyerPage() {
       matchesStatus = currentStatus === "";
     }
 
-    // Поиск
     const title = item.title.toLowerCase();
     const city = (item.city || "").toLowerCase();
     const matchesSearch =
@@ -245,378 +286,401 @@ export default function BuyerPage() {
   });
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#020617",
-        backgroundImage:
-          "radial-gradient(circle at 0% 0%, rgba(56,189,248,0.22) 0, transparent 55%), radial-gradient(circle at 100% 0%, rgba(52,211,153,0.2) 0, transparent 55%), radial-gradient(circle at 50% 100%, rgba(59,130,246,0.2) 0, transparent 55%)",
-        color: "#ffffff",
-        padding: "20px 16px",
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1120,
-          margin: "0 auto",
-          borderRadius: 28,
-          padding: "16px 18px 18px",
-          border: "1px solid rgba(148,163,184,0.28)",
-          background:
-            "linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
-          boxShadow:
-            "0 24px 70px rgba(0,0,0,0.9), 0 0 0 1px rgba(15,23,42,0.9)",
-          backdropFilter: "blur(18px)",
-        }}
-      >
-        <a
-          href="/"
+    <main style={pageWrap}>
+      <style>
+        {`
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+`}
+      </style>
+
+      <div style={shellCard}>
+        <div style={shellGlow} />
+
+        <div
           style={{
-            fontSize: "0.85rem",
-            color: "#9CA3AF",
-            textDecoration: "none",
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          ← На главную
-        </a>
-
-        <h1
-          style={{
-            fontSize: "24px",
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "#E0F2FE",
-            margin: "14px 0 6px",
-          }}
-        >
-          Кабинет скупщика
-        </h1>
-
-        {!isAuthorized ? (
-          <div
+          <a
+            href="/"
             style={{
-              marginTop: 12,
-              borderRadius: 20,
-              border: "1px solid rgba(148,163,184,0.4)",
-              background:
-                "linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
-              padding: 16,
-              maxWidth: 420,
+              fontSize: "0.85rem",
+              color: "#9CA3AF",
+              textDecoration: "none",
             }}
           >
-            <p
-              style={{
-                color: "#9CA3AF",
-                fontSize: "0.9rem",
-                marginBottom: 10,
-              }}
-            >
-              Введите код доступа, который вы получили от владельца FofanShop.
-            </p>
+            ← На главную
+          </a>
 
+          <h1
+            style={{
+              fontSize: "22px",
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "#fee2e2",
+              margin: "14px 0 8px",
+            }}
+          >
+            Кабинет скупщика
+          </h1>
+
+          {!isAuthorized ? (
             <div
               style={{
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-                marginBottom: 6,
+                marginTop: 12,
+                borderRadius: 20,
+                border: "1px solid rgba(248,113,113,0.5)",
+                background:
+                  "radial-gradient(circle at top left, rgba(248,113,113,0.18), transparent 60%), rgba(7,10,20,0.98)",
+                padding: 16,
+                maxWidth: 420,
+                boxShadow:
+                  "0 24px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(15,23,42,0.9)",
               }}
             >
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Код доступа"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  ...inputBase,
-                  borderRadius: 999,
-                  paddingRight: 40,
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                  borderRadius: 999,
-                  border: "1px solid rgba(148,163,184,0.6)",
-                  background: "rgba(15,23,42,0.96)",
-                  color: "#9CA3AF",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                  padding: "7px 10px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {showPassword ? "Скрыть" : "Показать"}
-              </button>
-            </div>
-
-            {authError && (
               <p
                 style={{
-                  color: "#f97373",
-                  fontSize: "0.8rem",
-                  margin: "4px 0 8px",
-                }}
-              >
-                {authError}
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={handleAuth}
-              style={btnPrimary}
-            >
-              Войти
-            </button>
-          </div>
-        ) : (
-          <>
-            <p
-              style={{
-                color: "#9CA3AF",
-                fontSize: "0.85rem",
-                marginBottom: 12,
-              }}
-            >
-              Здесь актуальные заявки клиентов. Отмечайте интерес и при
-              необходимости указывайте свою цену и комментарий.
-            </p>
-
-            {/* Панель поиска / фильтра / сортировки */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 10,
-                alignItems: "center",
-                marginBottom: 14,
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Поиск по названию или городу"
-                value={search}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setSearch(e.target.value)
-                }
-                style={{
-                  ...inputBase,
-                  minWidth: 220,
-                  borderRadius: 999,
-                  flex: "1 1 220px",
-                }}
-              />
-              <select
-                value={statusFilter}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setStatusFilter(e.target.value as StatusFilter)
-                }
-                style={{
-                  ...inputBase,
-                  minWidth: 150,
-                  borderRadius: 999,
-                }}
-              >
-                <option value="all">Все статусы</option>
-                <option value="interested">Только «интересно»</option>
-                <option value="not_interested">Только «не интересно»</option>
-                <option value="none">Без статуса</option>
-              </select>
-              <select
-                value={sortKey}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setSortKey(e.target.value as SortKey)
-                }
-                style={{
-                  ...inputBase,
-                  minWidth: 170,
-                  borderRadius: 999,
-                }}
-              >
-                <option value="date_desc">Новые сверху (дата)</option>
-                <option value="price_desc">
-                  Цена клиента: дороже → дешевле
-                </option>
-                <option value="price_asc">
-                  Цена клиента: дешевле → дороже
-                </option>
-              </select>
-              <span
-                style={{
-                  fontSize: "0.78rem",
                   color: "#9CA3AF",
-                  marginLeft: "auto",
+                  fontSize: "0.9rem",
+                  marginBottom: 10,
                 }}
               >
-                Показано: {sortedItems.length}
-              </span>
-            </div>
-
-            {loading && (
-              <p style={{ color: "#9CA3AF", fontSize: "0.9rem" }}>
-                Загрузка…
+                Введите код доступа, который вы получили от владельца
+                FofanShop.
               </p>
-            )}
 
-            {!loading && items.length === 0 && (
-              <p
-                style={{ color: "#9CA3AF", fontSize: "0.9rem" }}
-              >
-                Пока нет заявок.
-              </p>
-            )}
-
-            {!loading && items.length > 0 && (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns:
-                    "repeat(auto-fill, minmax(290px, 1fr))",
-                  gap: 16,
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  marginBottom: 6,
                 }}
               >
-                {sortedItems.map((item) => {
-                  const hasPhoto =
-                    item.photos && item.photos.length > 0;
-                  const thumb = hasPhoto
-                    ? getApiFileUrl(item.photos![0])
-                    : null;
-                  const status = editStatus[item.id];
-                  const disabledFields = status === "not_interested";
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Код доступа"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    ...inputBase,
+                    borderRadius: 999,
+                    paddingRight: 40,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  style={{
+                    borderRadius: 999,
+                    border: "1px solid rgba(148,163,184,0.7)",
+                    background: "rgba(15,23,42,0.98)",
+                    color: "#9CA3AF",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                    padding: "7px 10px",
+                    whiteSpace: "nowrap",
+                    transition:
+                      "transform 0.14s ease-out, box-shadow 0.14s ease-out",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "translateY(-1px)";
+                    el.style.boxShadow =
+                      "0 10px 28px rgba(15,23,42,0.9)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "none";
+                    el.style.boxShadow = "none";
+                  }}
+                >
+                  {showPassword ? "Скрыть" : "Показать"}
+                </button>
+              </div>
 
-                  return (
-                    <div
-                      key={item.id}
-                      style={{
-                        borderRadius: 20,
-                        border: "1px solid rgba(148,163,184,0.35)",
-                        background:
-                          "linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
-                        padding: 12,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                        boxShadow:
-                          "0 18px 45px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)",
-                        transition:
-                          "transform 0.18s, box-shadow 0.18s",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLDivElement).style.transform =
-                          "translateY(-2px)";
-                        (e.currentTarget as HTMLDivElement).style.boxShadow =
-                          "0 22px 55px rgba(0,0,0,0.95), 0 0 0 1px rgba(30,64,175,0.8)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLDivElement).style.transform =
-                          "translateY(0)";
-                        (e.currentTarget as HTMLDivElement).style.boxShadow =
-                          "0 18px 45px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)";
-                      }}
-                    >
-                      {thumb && (
-                        <div
-                          style={{
-                            width: "100%",
-                            aspectRatio: "4 / 3",
-                            borderRadius: 14,
-                            overflow: "hidden",
-                            border:
-                              "1px solid rgba(56,189,248,0.45)",
-                            backgroundColor: "#020617",
-                          }}
-                        >
-                          <img
-                            src={thumb}
-                            alt={item.title}
+              {authError && (
+                <p
+                  style={{
+                    color: "#f97373",
+                    fontSize: "0.8rem",
+                    margin: "4px 0 8px",
+                  }}
+                >
+                  {authError}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleAuth}
+                style={btnPrimary}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.transform = "translateY(-1px) scale(1.01)";
+                  el.style.boxShadow =
+                    "0 22px 55px rgba(127,29,29,0.95)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.transform = "none";
+                  el.style.boxShadow =
+                    "0 18px 40px rgba(127,29,29,0.8)";
+                }}
+              >
+                Войти
+              </button>
+            </div>
+          ) : (
+            <>
+              <p
+                style={{
+                  color: "#9CA3AF",
+                  fontSize: "0.85rem",
+                  marginBottom: 12,
+                }}
+              >
+                Здесь актуальные заявки клиентов. Отмечайте интерес и при
+                необходимости указывайте свою цену и комментарий.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  alignItems: "center",
+                  marginBottom: 14,
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Поиск по названию или городу"
+                  value={search}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setSearch(e.target.value)
+                  }
+                  style={{
+                    ...inputBase,
+                    minWidth: 220,
+                    borderRadius: 999,
+                    flex: "1 1 220px",
+                  }}
+                />
+                <select
+                  value={statusFilter}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setStatusFilter(e.target.value as StatusFilter)
+                  }
+                  style={{
+                    ...inputBase,
+                    minWidth: 150,
+                    borderRadius: 999,
+                  }}
+                >
+                  <option value="all">Все статусы</option>
+                  <option value="interested">Только «интересно»</option>
+                  <option value="not_interested">
+                    Только «не интересно»
+                  </option>
+                  <option value="none">Без статуса</option>
+                </select>
+                <select
+                  value={sortKey}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setSortKey(e.target.value as SortKey)
+                  }
+                  style={{
+                    ...inputBase,
+                    minWidth: 170,
+                    borderRadius: 999,
+                  }}
+                >
+                  <option value="date_desc">
+                    Новые сверху (дата)
+                  </option>
+                  <option value="price_desc">
+                    Цена клиента: дороже → дешевле
+                  </option>
+                  <option value="price_asc">
+                    Цена клиента: дешевле → дороже
+                  </option>
+                </select>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#9CA3AF",
+                    marginLeft: "auto",
+                  }}
+                >
+                  Показано: {sortedItems.length}
+                </span>
+              </div>
+
+              {loading && (
+                <p style={{ color: "#9CA3AF", fontSize: "0.9rem" }}>
+                  Загрузка…
+                </p>
+              )}
+
+              {!loading && items.length === 0 && (
+                <p
+                  style={{ color: "#9CA3AF", fontSize: "0.9rem" }}
+                >
+                  Пока нет заявок.
+                </p>
+              )}
+
+              {!loading && items.length > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(290px, 1fr))",
+                    gap: 16,
+                  }}
+                >
+                  {sortedItems.map((item) => {
+                    const hasPhoto =
+                      item.photos && item.photos.length > 0;
+                    const thumb = hasPhoto
+                      ? getApiFileUrl(item.photos![0])
+                      : null;
+                    const status = editStatus[item.id];
+                    const disabledFields =
+                      status === "not_interested";
+
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          borderRadius: 20,
+                          border:
+                            "1px solid rgba(148,163,184,0.35)",
+                          background:
+                            "radial-gradient(circle at top left, rgba(248,113,113,0.18), transparent 60%), rgba(7,10,20,0.98)",
+                          padding: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                          boxShadow:
+                            "0 18px 45px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)",
+                          transition:
+                            "transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out",
+                        }}
+                        onMouseEnter={(e) => {
+                          const el =
+                            e.currentTarget as HTMLDivElement;
+                          el.style.transform =
+                            "translateY(-2px) scale(1.01)";
+                          el.style.boxShadow =
+                            "0 24px 60px rgba(0,0,0,0.96), 0 0 0 1px rgba(248,113,113,0.6)";
+                          el.style.borderColor =
+                            "rgba(248,113,113,0.7)";
+                        }}
+                        onMouseLeave={(e) => {
+                          const el =
+                            e.currentTarget as HTMLDivElement;
+                          el.style.transform = "translateY(0) scale(1)";
+                          el.style.boxShadow =
+                            "0 18px 45px rgba(0,0,0,0.85), 0 0 0 1px rgba(15,23,42,0.9)";
+                          el.style.borderColor =
+                            "rgba(148,163,184,0.35)";
+                        }}
+                      >
+                        {thumb && (
+                          <div
                             style={{
                               width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
+                              aspectRatio: "4 / 3",
+                              borderRadius: 14,
+                              overflow: "hidden",
+                              border:
+                                "1px solid rgba(248,113,113,0.6)",
+                              backgroundColor: "#020617",
                             }}
-                          />
-                        </div>
-                      )}
-
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <span
-                          style={{
-                            padding: "2px 8px",
-                            borderRadius: 999,
-                            border:
-                              "1px solid rgba(56,189,248,0.7)",
-                            fontSize: "0.7rem",
-                            color: "#38bdf8",
-                          }}
-                        >
-                          {categoryLabels[item.category] ??
-                            item.category}
-                        </span>
-                        <span
-                          style={{
-                            padding: "2px 8px",
-                            borderRadius: 999,
-                            border:
-                              item.condition === "new"
-                                ? "1px solid rgba(52,211,153,0.8)"
-                                : "1px solid rgba(250,204,21,0.8)",
-                            fontSize: "0.7rem",
-                            color:
-                              item.condition === "new"
-                                ? "#bbf7d0"
-                                : "#facc15",
-                            background:
-                              item.condition === "new"
-                                ? "rgba(22,163,74,0.15)"
-                                : "rgba(234,179,8,0.15)",
-                          }}
-                        >
-                          {item.condition === "new" ? "Новый" : "Б/у"}
-                        </span>
-                      </div>
-
-                      <h3
-                        style={{
-                          margin: "4px 0 2px",
-                          fontSize: "1rem",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {item.title}
-                      </h3>
-
-                      <p
-                        style={{
-                          fontSize: "0.8rem",
-                          color: "#9CA3AF",
-                          margin: 0,
-                        }}
-                      >
-                        Клиент хочет:{" "}
-                        {item.price_client ? (
-                          <span style={{ color: "#22c55e" }}>
-                            {item.price_client} грн
-                          </span>
-                        ) : (
-                          "не указал"
+                          >
+                            <img
+                              src={thumb}
+                              alt={item.title}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                display: "block",
+                              }}
+                            />
+                          </div>
                         )}
-                      </p>
 
-                      {item.city && (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span
+                            style={{
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              border:
+                                "1px solid rgba(248,113,113,0.7)",
+                              fontSize: "0.7rem",
+                              color: "#fecaca",
+                              background:
+                                "rgba(127,29,29,0.32)",
+                            }}
+                          >
+                            {categoryLabels[item.category] ??
+                              item.category}
+                          </span>
+                          <span
+                            style={{
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              border:
+                                item.condition === "new"
+                                  ? "1px solid rgba(52,211,153,0.8)"
+                                  : "1px solid rgba(250,204,21,0.8)",
+                              fontSize: "0.7rem",
+                              color:
+                                item.condition === "new"
+                                  ? "#bbf7d0"
+                                  : "#facc15",
+                              background:
+                                item.condition === "new"
+                                  ? "rgba(22,163,74,0.18)"
+                                  : "rgba(234,179,8,0.18)",
+                            }}
+                          >
+                            {item.condition === "new"
+                              ? "Новый"
+                              : "Б/у"}
+                          </span>
+                        </div>
+
+                        <h3
+                          style={{
+                            margin: "4px 0 2px",
+                            fontSize: "1rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {item.title}
+                        </h3>
+
                         <p
                           style={{
                             fontSize: "0.8rem",
@@ -624,190 +688,257 @@ export default function BuyerPage() {
                             margin: 0,
                           }}
                         >
-                          📍 {item.city}
+                          Клиент хочет:{" "}
+                          {item.price_client ? (
+                            <span style={{ color: "#22c55e" }}>
+                              {item.price_client} грн
+                            </span>
+                          ) : (
+                            "не указал"
+                          )}
                         </p>
-                      )}
 
-                      {item.problems &&
-                        item.problems.length > 0 && (
+                        {item.city && (
                           <p
                             style={{
                               fontSize: "0.8rem",
                               color: "#9CA3AF",
-                              margin: "4px 0 0",
+                              margin: 0,
                             }}
                           >
-                            Проблемы:{" "}
-                            {item.problems.join(", ")}
+                            📍 {item.city}
                           </p>
                         )}
 
-                      <div
-                        style={{
-                          marginTop: 8,
-                          paddingTop: 8,
-                          borderTop:
-                            "1px solid rgba(30,64,175,0.7)",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 6,
-                        }}
-                      >
+                        {item.problems &&
+                          item.problems.length > 0 && (
+                            <p
+                              style={{
+                                fontSize: "0.8rem",
+                                color: "#9CA3AF",
+                                margin: "4px 0 0",
+                              }}
+                            >
+                              Проблемы:{" "}
+                              {item.problems.join(", ")}
+                            </p>
+                          )}
+
                         <div
                           style={{
+                            marginTop: 8,
+                            paddingTop: 8,
+                            borderTop:
+                              "1px solid rgba(30,64,175,0.7)",
                             display: "flex",
+                            flexDirection: "column",
                             gap: 6,
-                            flexWrap: "wrap",
                           }}
                         >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setEditStatus((prev) => ({
-                                ...prev,
-                                [item.id]: "interested",
-                              }))
-                            }
-                            style={chipStatus(
-                              status === "interested",
-                              "interested",
-                            )}
-                          >
-                            Интересно
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setEditStatus((prev) => ({
-                                ...prev,
-                                [item.id]: "not_interested",
-                              }))
-                            }
-                            style={chipStatus(
-                              status === "not_interested",
-                              "not_interested",
-                            )}
-                          >
-                            Не интересно
-                          </button>
-                        </div>
-
-                        <div>
                           <div
                             style={{
-                              fontSize: "0.75rem",
-                              color: "#9CA3AF",
-                              marginBottom: 2,
+                              display: "flex",
+                              gap: 6,
+                              flexWrap: "wrap",
                             }}
                           >
-                            Ваша цена (грн)
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditStatus((prev) => ({
+                                  ...prev,
+                                  [item.id]: "interested",
+                                }))
+                              }
+                              style={chipStatus(
+                                status === "interested",
+                                "interested",
+                              )}
+                              onMouseEnter={(e) => {
+                                const el =
+                                  e.currentTarget as HTMLButtonElement;
+                                el.style.transform =
+                                  "translateY(-1px)";
+                                el.style.boxShadow =
+                                  "0 10px 26px rgba(22,163,74,0.5)";
+                              }}
+                              onMouseLeave={(e) => {
+                                const el =
+                                  e.currentTarget as HTMLButtonElement;
+                                el.style.transform = "none";
+                                el.style.boxShadow = "none";
+                              }}
+                            >
+                              Интересно
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditStatus((prev) => ({
+                                  ...prev,
+                                  [item.id]: "not_interested",
+                                }))
+                              }
+                              style={chipStatus(
+                                status === "not_interested",
+                                "not_interested",
+                              )}
+                              onMouseEnter={(e) => {
+                                const el =
+                                  e.currentTarget as HTMLButtonElement;
+                                el.style.transform =
+                                  "translateY(-1px)";
+                                el.style.boxShadow =
+                                  "0 10px 26px rgba(248,113,113,0.5)";
+                              }}
+                              onMouseLeave={(e) => {
+                                const el =
+                                  e.currentTarget as HTMLButtonElement;
+                                el.style.transform = "none";
+                                el.style.boxShadow = "none";
+                              }}
+                            >
+                              Не интересно
+                            </button>
                           </div>
-                          <input
-                            type="number"
-                            disabled={disabledFields}
-                            value={editPrice[item.id] ?? ""}
-                            onChange={(e) =>
-                              setEditPrice((prev) => ({
-                                ...prev,
-                                [item.id]: e.target.value,
-                              }))
-                            }
-                            style={{
-                              width: "100%",
-                              padding: "6px 8px",
-                              borderRadius: 10,
-                              border:
-                                "1px solid rgba(148,163,184,0.5)",
-                              background: disabledFields
-                                ? "#111827"
-                                : "#020617",
-                              color: disabledFields
-                                ? "#6b7280"
-                                : "#fff",
-                              fontSize: "0.85rem",
-                              boxSizing: "border-box",
-                              opacity: disabledFields ? 0.6 : 1,
-                              outline: "none",
-                            }}
-                          />
-                        </div>
 
-                        <div>
-                          <div
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "#9CA3AF",
+                                marginBottom: 2,
+                              }}
+                            >
+                              Ваша цена (грн)
+                            </div>
+                            <input
+                              type="number"
+                              disabled={disabledFields}
+                              value={editPrice[item.id] ?? ""}
+                              onChange={(e) =>
+                                setEditPrice((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value,
+                                }))
+                              }
+                              style={{
+                                width: "100%",
+                                padding: "6px 8px",
+                                borderRadius: 10,
+                                border:
+                                  "1px solid rgba(148,163,184,0.5)",
+                                background: disabledFields
+                                  ? "#111827"
+                                  : "#020617",
+                                color: disabledFields
+                                  ? "#6b7280"
+                                  : "#fff",
+                                fontSize: "0.85rem",
+                                boxSizing: "border-box",
+                                opacity: disabledFields ? 0.6 : 1,
+                                outline: "none",
+                              }}
+                            />
+                          </div>
+
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "#9CA3AF",
+                                marginBottom: 2,
+                              }}
+                            >
+                              Комментарий
+                            </div>
+                            <textarea
+                              disabled={disabledFields}
+                              value={editComment[item.id] ?? ""}
+                              onChange={(e) =>
+                                setEditComment((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value,
+                                }))
+                              }
+                              style={{
+                                width: "100%",
+                                minHeight: 50,
+                                borderRadius: 10,
+                                border:
+                                  "1px solid rgba(148,163,184,0.5)",
+                                background: disabledFields
+                                  ? "#111827"
+                                  : "#020617",
+                                color: disabledFields
+                                  ? "#6b7280"
+                                  : "#fff",
+                                fontSize: "0.85rem",
+                                padding: "6px 8px",
+                                boxSizing: "border-box",
+                                resize: "vertical",
+                                opacity: disabledFields ? 0.6 : 1,
+                                outline: "none",
+                              }}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => void saveBuyer(item.id)}
+                            disabled={savingId === item.id}
                             style={{
-                              fontSize: "0.75rem",
-                              color: "#9CA3AF",
-                              marginBottom: 2,
+                              marginTop: 4,
+                              padding: "6px 12px",
+                              borderRadius: 999,
+                              border: "none",
+                              background:
+                                "linear-gradient(90deg,#38bdf8,#22c55e)",
+                              color: "#020617",
+                              fontSize: "0.85rem",
+                              cursor: "pointer",
+                              alignSelf: "flex-start",
+                              opacity:
+                                savingId === item.id ? 0.7 : 1,
+                              boxShadow:
+                                savingId === item.id
+                                  ? "none"
+                                  : "0 0 16px rgba(56,189,248,0.4)",
+                              transition:
+                                "transform 0.16s ease-out, box-shadow 0.16s ease-out",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (savingId === item.id) return;
+                              const el =
+                                e.currentTarget as HTMLButtonElement;
+                              el.style.transform =
+                                "translateY(-1px)";
+                              el.style.boxShadow =
+                                "0 14px 34px rgba(56,189,248,0.6)";
+                            }}
+                            onMouseLeave={(e) => {
+                              const el =
+                                e.currentTarget as HTMLButtonElement;
+                              el.style.transform = "none";
+                              el.style.boxShadow =
+                                savingId === item.id
+                                  ? "none"
+                                  : "0 0 16px rgba(56,189,248,0.4)";
                             }}
                           >
-                            Комментарий
-                          </div>
-                          <textarea
-                            disabled={disabledFields}
-                            value={editComment[item.id] ?? ""}
-                            onChange={(e) =>
-                              setEditComment((prev) => ({
-                                ...prev,
-                                [item.id]: e.target.value,
-                              }))
-                            }
-                            style={{
-                              width: "100%",
-                              minHeight: 50,
-                              borderRadius: 10,
-                              border:
-                                "1px solid rgba(148,163,184,0.5)",
-                              background: disabledFields
-                                ? "#111827"
-                                : "#020617",
-                              color: disabledFields
-                                ? "#6b7280"
-                                : "#fff",
-                              fontSize: "0.85rem",
-                              padding: "6px 8px",
-                              boxSizing: "border-box",
-                              resize: "vertical",
-                              opacity: disabledFields ? 0.6 : 1,
-                              outline: "none",
-                            }}
-                          />
+                            {savingId === item.id
+                              ? "Сохранение..."
+                              : "Сохранить"}
+                          </button>
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={() => void saveBuyer(item.id)}
-                          disabled={savingId === item.id}
-                          style={{
-                            marginTop: 4,
-                            padding: "6px 12px",
-                            borderRadius: 999,
-                            border: "none",
-                            background:
-                              "linear-gradient(90deg,#38bdf8,#22c55e)",
-                            color: "#020617",
-                            fontSize: "0.85rem",
-                            cursor: "pointer",
-                            alignSelf: "flex-start",
-                            opacity:
-                              savingId === item.id ? 0.7 : 1,
-                            boxShadow:
-                              savingId === item.id
-                                ? "none"
-                                : "0 0 16px rgba(56,189,248,0.4)",
-                          }}
-                        >
-                          {savingId === item.id
-                            ? "Сохранение..."
-                            : "Сохранить"}
-                        </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </main>
   );

@@ -4,23 +4,94 @@ import React, {
   useState,
   type CSSProperties,
   useEffect,
+  useRef,
+  type MouseEvent,
 } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 
-// === БАЗОВЫЕ СТИЛИ КНОПОК / ЭЛЕМЕНТОВ ===
+// === БАЗОВЫЕ СТИЛИ / ТЁМНО‑КРАСНАЯ ТЕМА ===
+
+const pageWrap: CSSProperties = {
+  minHeight: "100vh",
+  backgroundColor: "#050208",
+  color: "#f9fafb",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const meshLayer: CSSProperties = {
+  position: "fixed",
+  inset: "-20%",
+  backgroundImage:
+    "radial-gradient(at 0% 0%, rgba(248,113,113,0.72) 0px, transparent 55%), radial-gradient(at 100% 0%, rgba(190,24,93,0.55) 0px, transparent 55%), radial-gradient(at 0% 100%, rgba(127,29,29,0.6) 0px, transparent 55%), radial-gradient(at 100% 100%, rgba(15,23,42,0.96) 0px, #020105 60%)",
+  backgroundSize: "180% 180%",
+  animation: "meshMove 22s ease-in-out infinite alternate",
+  opacity: 0.9,
+  pointerEvents: "none",
+  zIndex: 0,
+};
+
+const noiseLayer: CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E\")",
+  mixBlendMode: "soft-light",
+  pointerEvents: "none",
+  zIndex: 0,
+};
+
+const container: CSSProperties = {
+  maxWidth: 1120,
+  margin: "0 auto",
+  padding: "20px 18px 40px",
+  boxSizing: "border-box",
+  position: "relative",
+  zIndex: 1,
+};
+
+const glassPanel: CSSProperties = {
+  borderRadius: 28,
+  border: "1px solid rgba(248,113,113,0.45)",
+  background:
+    "linear-gradient(135deg, rgba(7,10,20,0.96), rgba(15,23,42,0.92))",
+  padding: "22px 18px 24px",
+  boxShadow:
+    "0 30px 80px rgba(0,0,0,0.96), 0 0 55px rgba(127,29,29,0.8)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const glowBorder: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  borderRadius: 28,
+  border: "1px solid transparent",
+  background:
+    "linear-gradient(120deg, rgba(248,113,113,0.9), rgba(251,191,36,0.7), rgba(248,113,113,0.95)) border-box",
+  WebkitMask:
+    "linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0)",
+  WebkitMaskComposite: "xor",
+  pointerEvents: "none",
+  opacity: 0.5,
+};
 
 const btnPrimaryBase: CSSProperties = {
   padding: "9px 20px",
   borderRadius: 999,
-  border: "none",
+  border: "1px solid rgba(248,113,113,0.95)",
   cursor: "pointer",
   fontSize: "0.9rem",
   fontWeight: 600,
-  color: "#020617",
-  background: "linear-gradient(90deg,#38bdf8,#22c55e)",
-  boxShadow: "0 0 18px rgba(56,189,248,0.55)",
-  transition: "transform 0.16s ease-out, box-shadow 0.16s ease-out",
+  color: "#0b0f19",
+  background:
+    "linear-gradient(120deg, #f97373 0%, #fb923c 35%, #facc15 70%, #f97373 100%)",
+  boxShadow: "0 20px 42px rgba(127,29,29,0.95)",
+  transition:
+    "transform 0.18s ease-out, box-shadow 0.18s ease-out, filter 0.18s ease-out",
 };
 
 const btnPrimary: CSSProperties = {
@@ -32,9 +103,9 @@ const btnSecondary: CSSProperties = {
   borderRadius: 999,
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: "rgba(148,163,184,0.5)",
+  borderColor: "rgba(148,163,184,0.7)",
   background:
-    "linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.86))",
+    "radial-gradient(circle at top, rgba(148,163,184,0.24), transparent 65%), rgba(15,23,42,0.96)",
   color: "#e5e7eb",
   cursor: "pointer",
   fontSize: "0.9rem",
@@ -42,7 +113,8 @@ const btnSecondary: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  transition: "transform 0.16s ease-out, box-shadow 0.16s ease-out",
+  transition:
+    "transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out, background 0.18s ease-out, color 0.18s ease-out",
 };
 
 const chipBase: CSSProperties = {
@@ -50,20 +122,23 @@ const chipBase: CSSProperties = {
   borderRadius: 12,
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: "rgba(148,163,184,0.3)",
-  background: "rgba(15,23,42,0.96)",
+  borderColor: "rgba(148,163,184,0.45)",
+  background: "rgba(15,23,42,0.98)",
   color: "#e5e7eb",
   cursor: "pointer",
   fontSize: "0.9rem",
   textAlign: "center",
-  transition: "border-color 0.16s ease-out, box-shadow 0.16s ease-out, color 0.16s ease-out",
+  transition:
+    "border-color 0.16s ease-out, box-shadow 0.16s ease-out, color 0.16s ease-out, background 0.16s ease-out, transform 0.16s ease-out",
 };
 
 const chipActive: CSSProperties = {
   ...chipBase,
-  borderColor: "#22c55e",
-  boxShadow: "0 0 18px rgba(34,197,94,0.45)",
-  color: "#bbf7d0",
+  borderColor: "rgba(248,113,113,0.95)",
+  boxShadow: "0 0 18px rgba(248,113,113,0.6)",
+  color: "#fee2e2",
+  background:
+    "radial-gradient(circle at top, rgba(248,113,113,0.24), transparent 65%), rgba(15,23,42,0.98)",
 };
 
 const inputStyle: CSSProperties = {
@@ -72,8 +147,8 @@ const inputStyle: CSSProperties = {
   borderRadius: 10,
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: "rgba(148,163,184,0.35)",
-  background: "rgba(15,23,42,0.96)",
+  borderColor: "rgba(148,163,184,0.5)",
+  background: "rgba(15,23,42,0.98)",
   color: "#fff",
   fontSize: "0.9rem",
   boxSizing: "border-box",
@@ -85,125 +160,238 @@ const labelStyle: CSSProperties = {
   marginBottom: "2px",
 };
 
-// === HEADER ===
+// === TILT ===
+
+const tiltWrapperBase: CSSProperties = {
+  borderRadius: 28,
+  transformStyle: "preserve-3d",
+  transition: "transform 0.18s ease-out, box-shadow 0.18s ease-out",
+};
+
+const tiltWrapperHover: CSSProperties = {
+  boxShadow:
+    "0 26px 80px rgba(0,0,0,0.96), 0 0 40px rgba(248,113,113,0.55)",
+};
+
+function TiltCard({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [hover, setHover] = useState(false);
+  const [transform, setTransform] =
+    useState<string>("perspective(900px)");
+
+  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const midX = rect.width / 2;
+    const midY = rect.height / 2;
+
+    const rX = ((y - midY) / midY) * -6;
+    const rY = ((x - midX) / midX) * 6;
+
+    setTransform(
+      `perspective(900px) rotateX(${rX.toFixed(
+        2,
+      )}deg) rotateY(${rY.toFixed(2)}deg) scale(1.01)`,
+    );
+  };
+
+  const reset = () => {
+    setTransform("perspective(900px)");
+  };
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        ...(tiltWrapperBase as CSSProperties),
+        ...(hover ? tiltWrapperHover : {}),
+        transform,
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => {
+        setHover(false);
+        reset();
+      }}
+      onMouseMove={handleMove}
+    >
+      {children}
+    </div>
+  );
+}
+
+// === HEADER + ЛИНИЯ + КАПЛЯ ===
 
 function Header({ onSellClick }: { onSellClick: () => void }) {
   return (
-    <header
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 8,
-        padding: "10px 16px",
-        backgroundColor: "rgba(2,6,23,0.96)",
-        borderBottom: "1px solid rgba(148,163,184,0.35)",
-        backdropFilter: "blur(16px)",
-        position: "sticky",
-        top: 0,
-        zIndex: 20,
-        flexWrap: "wrap",
-        rowGap: 6,
-      }}
-    >
+    <>
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          borderBottom: "1px solid rgba(148,163,184,0.0)",
+          background:
+            "linear-gradient(90deg, rgba(5,5,11,0.96), rgba(12,10,18,0.96))",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: "0 auto",
+            padding: "10px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+            rowGap: 6,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 700,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "#fee2e2",
+              fontSize: "0.9rem",
+            }}
+          >
+            FofanShop
+          </div>
+
+          <nav
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            <button
+              onClick={onSellClick}
+              style={btnPrimary}
+              className="fs-btn fs-btn-primary"
+            >
+              Продать
+            </button>
+
+            <a href="/board" style={btnSecondary} className="fs-btn">
+              Доска объявлений
+            </a>
+
+            <a
+              href="/refund"
+              style={{
+                ...btnSecondary,
+                borderColor: "rgba(248,113,113,0.85)",
+                color: "#fecaca",
+                boxShadow: "0 0 18px rgba(248,113,113,0.6)",
+              }}
+              className="fs-btn"
+            >
+              Рефаунд
+            </a>
+          </nav>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
+            }}
+          >
+            <a
+              href="/contact"
+              style={{
+                fontSize: "0.85rem",
+                color: "#9CA3AF",
+                textDecoration: "none",
+              }}
+              className="fs-link-soft"
+            >
+              Связаться
+            </a>
+
+            <Link
+              href="/buyer"
+              style={{
+                fontSize: "0.8rem",
+                color: "#e5e7eb",
+                textDecoration: "none",
+                borderRadius: 999,
+                border: "1px solid rgba(148,163,184,0.7)",
+                padding: "6px 10px",
+                background:
+                  "radial-gradient(circle at top, rgba(148,163,184,0.22), transparent 60%), rgba(15,23,42,0.98)",
+              }}
+              className="fs-btn fs-btn-outline"
+            >
+              Кабинет скупщика
+            </Link>
+
+            <Link
+              href="/admin"
+              style={{
+                fontSize: "0.8rem",
+                color: "#e5e7eb",
+                textDecoration: "none",
+                borderRadius: 999,
+                border: "1px solid rgba(148,163,184,0.7)",
+                padding: "6px 10px",
+                background:
+                  "radial-gradient(circle at top, rgba(148,163,184,0.22), transparent 60%), rgba(15,23,42,0.98)",
+              }}
+              className="fs-btn fs-btn-outline"
+            >
+              Админ‑кабинет
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* линия + капля без остановок */}
       <div
         style={{
-          fontWeight: 700,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "#E0F2FE",
-          fontSize: "0.9rem",
+          width: "100%",
+          height: 3,
+          backgroundImage:
+            "linear-gradient(90deg, rgba(248,113,113,0.12), rgba(248,113,113,1), rgba(251,191,36,0.9), rgba(248,113,113,1), rgba(248,113,113,0.12))",
+          backgroundSize: "220% 100%",
+          boxShadow:
+            "0 0 22px rgba(248,113,113,0.95), 0 0 40px rgba(127,29,29,0.95)",
+          animation: "fsLineFlow 4.5s linear infinite",
+          position: "relative",
+          overflow: "visible",
         }}
       >
-        FofanShop
-      </div>
-
-      <nav
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        <button
-          onClick={onSellClick}
-          style={btnPrimary}
-        >
-          Продать
-        </button>
-
-        <a href="/board" style={btnSecondary}>
-          Доска объявлений
-        </a>
-
-        <a
-          href="/refund"
+        <div
           style={{
-            ...btnSecondary,
-            borderColor: "rgba(248,113,113,0.7)",
-            color: "#fecaca",
-            boxShadow: "0 0 18px rgba(248,113,113,0.45)",
-          }}
-        >
-          Рефаунд
-        </a>
-      </nav>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-          justifyContent: "flex-end",
-        }}
-      >
-        <a
-          href="/contact"
-          style={{
-            fontSize: "0.85rem",
-            color: "#9CA3AF",
-            textDecoration: "none",
-          }}
-        >
-          Связаться
-        </a>
-
-        <Link
-          href="/buyer"
-          style={{
-            fontSize: "0.8rem",
-            color: "#e5e7eb",
-            textDecoration: "none",
-            borderRadius: 999,
-            border: "1px solid rgba(148,163,184,0.5)",
-            padding: "6px 10px",
+            position: "absolute",
+            left: "72%",
+            top: -16,
+            width: 18,
+            height: 26,
+            borderRadius: "60% 60% 70% 70% / 80% 80% 45% 45%",
             background:
-              "linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
+              "radial-gradient(circle at 30% 0%, #fef9c3 0, #facc15 18%, #fb923c 40%, #f97373 70%, #7f1d1d 100%)",
+            boxShadow:
+              "0 0 18px rgba(248,113,113,0.95), 0 0 30px rgba(127,29,29,0.9)",
+            animation: "fsLavaDropSmooth 2.6s linear infinite",
+            opacity: 0.96,
+            willChange: "transform, opacity",
+            transform: "translate3d(0,0,0)",
           }}
-        >
-          Кабинет скупщика
-        </Link>
-
-        <Link
-          href="/admin"
-          style={{
-            fontSize: "0.8rem",
-            color: "#e5e7eb",
-            textDecoration: "none",
-            borderRadius: 999,
-            border: "1px solid rgba(148,163,184,0.5)",
-            padding: "6px 10px",
-            background:
-              "linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
-          }}
-        >
-          Админ‑кабинет
-        </Link>
+        />
       </div>
-    </header>
+    </>
   );
 }
 
@@ -280,7 +468,10 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
       const problems_description =
         condition === "used" ? problemsDesc || "" : "";
-      formData.append("problems_description", problems_description);
+      formData.append(
+        "problems_description",
+        problems_description,
+      );
 
       formData.append(
         "price_client",
@@ -314,8 +505,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
         position: "fixed",
         inset: 0,
         zIndex: 40,
-        background: "rgba(2,6,23,0.9)",
-        backdropFilter: "blur(18px)",
+        background: "rgba(5,5,11,0.94)",
+        backdropFilter: "blur(22px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -331,35 +522,43 @@ function SellWizard({ onClose }: { onClose: () => void }) {
           background:
             "linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.94))",
           borderRadius: 24,
-          border: "1px solid rgba(148,163,184,0.45)",
+          border: "1px solid rgba(248,113,113,0.7)",
           padding: "18px 20px 20px",
           boxShadow:
-            "0 24px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(15,23,42,0.9)",
+            "0 24px 60px rgba(0,0,0,0.96), 0 0 0 1px rgba(15,23,42,0.9)",
           maxHeight: "92vh",
           overflowY: "auto",
+          position: "relative",
         }}
       >
+        <div style={glowBorder} />
+
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             marginBottom: 10,
             alignItems: "center",
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: "1.15rem" }}>Продать вещь</h2>
+          <h2 style={{ margin: 0, fontSize: "1.15rem" }}>
+            Продать вещь
+          </h2>
           <button
             onClick={onClose}
             style={{
               background: "none",
               borderRadius: 999,
-              border: "1px solid rgba(148,163,184,0.5)",
-              color: "#9CA3AF",
+              border: "1px solid rgba(148,163,184,0.7)",
+              color: "#e5e7eb",
               cursor: "pointer",
               fontSize: "0.9rem",
               padding: "4px 9px",
-              backgroundColor: "rgba(15,23,42,0.9)",
+              backgroundColor: "rgba(15,23,42,0.98)",
             }}
+            className="fs-btn fs-btn-outline"
           >
             Закрыть ✕
           </button>
@@ -371,6 +570,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
             alignItems: "center",
             gap: 8,
             marginBottom: 14,
+            position: "relative",
+            zIndex: 1,
           }}
         >
           <div
@@ -378,7 +579,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
               flex: 1,
               height: 4,
               borderRadius: 99,
-              background: "rgba(148,163,184,0.22)",
+              background: "rgba(148,163,184,0.25)",
               overflow: "hidden",
             }}
           >
@@ -387,12 +588,15 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 height: "100%",
                 width: `${((step + 1) / totalSteps) * 100}%`,
                 borderRadius: 99,
-                background: "linear-gradient(90deg,#38bdf8,#22c55e)",
+                background:
+                  "linear-gradient(90deg,#f97373,#fb923c,#facc15)",
                 transition: "width 0.25s",
               }}
             />
           </div>
-          <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
+          <span
+            style={{ fontSize: "0.75rem", color: "#9CA3AF" }}
+          >
             Шаг {step + 1} из {totalSteps}
           </span>
         </div>
@@ -400,8 +604,10 @@ function SellWizard({ onClose }: { onClose: () => void }) {
         {!submitted ? (
           <>
             {step === 0 && (
-              <div>
-                <h3 style={{ fontSize: "1rem", marginBottom: 10 }}>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <h3
+                  style={{ fontSize: "1rem", marginBottom: 10 }}
+                >
                   Что вы хотите продать?
                 </h3>
                 <div
@@ -425,6 +631,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                       style={
                         category === key ? chipActive : chipBase
                       }
+                      className="fs-chip"
                     >
                       {label}
                     </button>
@@ -439,14 +646,20 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
-                <h3 style={{ fontSize: "1rem", margin: 0 }}>
+                <h3
+                  style={{ fontSize: "1rem", margin: 0 }}
+                >
                   Базовая информация
                 </h3>
 
                 <div>
-                  <div style={labelStyle}>Название / модель</div>
+                  <div style={labelStyle}>
+                    Название / модель
+                  </div>
                   <input
                     style={inputStyle}
                     placeholder="iPhone 13, Logitech G Pro..."
@@ -461,7 +674,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     <select
                       style={inputStyle}
                       value={memory}
-                      onChange={(e) => setMemory(e.target.value)}
+                      onChange={(e) =>
+                        setMemory(e.target.value)
+                      }
                     >
                       <option value="">Выберите</option>
                       <option value="64">64 ГБ</option>
@@ -483,8 +698,12 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                       }
                     >
                       <option value="">Выберите</option>
-                      <option value="mechanical">Механическая</option>
-                      <option value="membrane">Мембранная</option>
+                      <option value="mechanical">
+                        Механическая
+                      </option>
+                      <option value="membrane">
+                        Мембранная
+                      </option>
                       <option value="gaming">Игровая</option>
                       <option value="office">Офисная</option>
                     </select>
@@ -504,7 +723,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                       }
                     >
                       <option value="">Выберите</option>
-                      <option value="powerbank">Пауэрбанк</option>
+                      <option value="powerbank">
+                        Пауэрбанк
+                      </option>
                       <option value="charging">
                         Зарядная станция
                       </option>
@@ -516,7 +737,12 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
                 <div>
                   <div style={labelStyle}>Состояние</div>
-                  <div style={{ display: "flex", gap: 10 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                    }}
+                  >
                     <button
                       onClick={() => setCondition("new")}
                       style={
@@ -524,6 +750,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                           ? chipActive
                           : chipBase
                       }
+                      className="fs-chip"
                     >
                       Новый
                     </button>
@@ -534,6 +761,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                           ? chipActive
                           : chipBase
                       }
+                      className="fs-chip"
                     >
                       Б/у
                     </button>
@@ -548,11 +776,15 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
                 {condition === "used" && (
                   <>
-                    <h3 style={{ fontSize: "1rem", margin: 0 }}>
+                    <h3
+                      style={{ fontSize: "1rem", margin: 0 }}
+                    >
                       Проблемы с товаром
                     </h3>
                     <div
@@ -569,22 +801,27 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         "Камера/звук/микрофон",
                         "Другое",
                       ].map((p) => {
-                        const active = problems.includes(p);
+                        const active =
+                          problems.includes(p);
                         return (
                           <button
                             key={p}
-                            onClick={() => toggleProblem(p)}
+                            onClick={() =>
+                              toggleProblem(p)
+                            }
                             style={
                               active
                                 ? {
                                     ...chipBase,
-                                    borderColor: "#A855FF",
-                                    color: "#e9d5ff",
+                                    borderColor:
+                                      "rgba(248,113,113,0.95)",
+                                    color: "#fee2e2",
                                     boxShadow:
-                                      "0 0 18px rgba(168,85,247,0.4)",
+                                      "0 0 18px rgba(248,113,113,0.6)",
                                   }
                                 : chipBase
                             }
+                            className="fs-chip"
                           >
                             {p}
                           </button>
@@ -604,7 +841,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         placeholder="Царапины, не держит батарея..."
                         value={problemsDesc}
                         onChange={(e) =>
-                          setProblemsDesc(e.target.value)
+                          setProblemsDesc(
+                            e.target.value,
+                          )
                         }
                       />
                     </div>
@@ -612,13 +851,17 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 )}
 
                 <div>
-                  <div style={labelStyle}>Желаемая цена (грн)</div>
+                  <div style={labelStyle}>
+                    Желаемая цена (грн)
+                  </div>
                   <input
                     type="number"
                     style={inputStyle}
                     placeholder="5000"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) =>
+                      setPrice(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -630,9 +873,13 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
-                <h3 style={{ fontSize: "1rem", margin: 0 }}>
+                <h3
+                  style={{ fontSize: "1rem", margin: 0 }}
+                >
                   Фотографии товара
                 </h3>
                 <p
@@ -649,12 +896,14 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   style={{
                     ...btnSecondary,
                     borderStyle: "dashed",
-                    borderColor: "rgba(148,163,184,0.7)",
+                    borderColor:
+                      "rgba(248,113,113,0.8)",
                     padding: "10px 16px",
                     justifyContent: "center",
                     width: "100%",
                     cursor: "pointer",
                   }}
+                  className="fs-btn"
                 >
                   Выбрать файл
                   <input
@@ -680,7 +929,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                       gap: 8,
                     }}
                   >
-                    <span>Выбран: {pendingFile.name}</span>
+                    <span>
+                      Выбран: {pendingFile.name}
+                    </span>
                     <button
                       type="button"
                       onClick={handleAddPhoto}
@@ -690,6 +941,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         fontSize: "0.8rem",
                         boxShadow: "none",
                       }}
+                      className="fs-btn fs-btn-primary"
                     >
                       Добавить фото
                     </button>
@@ -712,13 +964,14 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                           borderRadius: 10,
                           borderWidth: 1,
                           borderStyle: "solid",
-                          borderColor: "rgba(148,163,184,0.4)",
+                          borderColor:
+                            "rgba(148,163,184,0.55)",
                           padding: "4px 8px",
                           fontSize: "0.75rem",
                           display: "flex",
                           alignItems: "center",
                           gap: 6,
-                          background: "#020617",
+                          background: "#020105",
                         }}
                       >
                         <span
@@ -733,7 +986,9 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleRemovePhoto(idx)}
+                          onClick={() =>
+                            handleRemovePhoto(idx)
+                          }
                           style={{
                             background: "none",
                             border: "none",
@@ -741,6 +996,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                             cursor: "pointer",
                             fontSize: "0.85rem",
                           }}
+                          className="fs-link-soft"
                         >
                           ✕
                         </button>
@@ -755,7 +1011,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     color: "#9CA3AF",
                   }}
                 >
-                  Фото будут загружены на сервер вместе с заявкой.
+                  Фото будут загружены на сервер вместе
+                  с заявкой.
                 </p>
               </div>
             )}
@@ -766,9 +1023,13 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
-                <h3 style={{ fontSize: "1rem", margin: 0 }}>
+                <h3
+                  style={{ fontSize: "1rem", margin: 0 }}
+                >
                   Как с вами связаться?
                 </h3>
                 <div>
@@ -777,18 +1038,23 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     style={inputStyle}
                     placeholder="Київ, Львів, Харків..."
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) =>
+                      setCity(e.target.value)
+                    }
                   />
                 </div>
                 <div>
                   <div style={labelStyle}>
-                    Контакт (Telegram @, телефон или другое)
+                    Контакт (Telegram @, телефон или
+                    другое)
                   </div>
                   <input
                     style={inputStyle}
                     placeholder="@username, +380..."
                     value={contact}
-                    onChange={(e) => setContact(e.target.value)}
+                    onChange={(e) =>
+                      setContact(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -800,16 +1066,21 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 justifyContent: "space-between",
                 gap: 10,
                 marginTop: 16,
+                position: "relative",
+                zIndex: 1,
               }}
             >
               <button
-                onClick={() => setStep((s) => Math.max(s - 1, 0))}
+                onClick={() =>
+                  setStep((s) => Math.max(s - 1, 0))
+                }
                 disabled={step === 0}
                 style={{
                   ...btnSecondary,
                   flex: 1,
                   opacity: step === 0 ? 0.4 : 1,
                 }}
+                className="fs-btn"
               >
                 Назад
               </button>
@@ -818,14 +1089,20 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={() => {
                     if (!canGoNext()) {
-                      if (step === 3 && files.length < 1) {
-                        alert("Добавьте хотя бы 1 фото.");
+                      if (
+                        step === 3 &&
+                        files.length < 1
+                      ) {
+                        alert(
+                          "Добавьте хотя бы 1 фото.",
+                        );
                       }
                       return;
                     }
                     setStep((s) => s + 1);
                   }}
                   style={{ ...btnPrimary, flex: 1 }}
+                  className="fs-btn fs-btn-primary"
                 >
                   Далее
                 </button>
@@ -833,6 +1110,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={handleSubmit}
                   style={{ ...btnPrimary, flex: 1 }}
+                  className="fs-btn fs-btn-primary"
                 >
                   Отправить заявку
                 </button>
@@ -844,6 +1122,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
             style={{
               textAlign: "center",
               padding: "24px 0 6px",
+              position: "relative",
+              zIndex: 1,
             }}
           >
             <h3
@@ -866,6 +1146,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
             <button
               onClick={onClose}
               style={{ ...btnPrimary, marginTop: 14 }}
+              className="fs-btn fs-btn-primary"
             >
               Закрыть
             </button>
@@ -897,22 +1178,90 @@ export default function Home() {
     <>
       <style>
         {`
-@keyframes fsNeonPulse {
+@keyframes meshMove {
   0% {
-    text-shadow: 0 0 10px rgba(56,189,248,0.9), 0 0 30px rgba(56,189,248,0.4);
+    background-position: 0% 0%;
+    transform: scale(1.06) translate3d(-2%, -2%, 0);
+  }
+  50% {
+    background-position: 60% 40%;
+    transform: scale(1.1) translate3d(2%, 3%, 0);
   }
   100% {
-    text-shadow: 0 0 18px rgba(56,189,248,1), 0 0 40px rgba(34,197,94,0.8);
+    background-position: 20% 80%;
+    transform: scale(1.08) translate3d(-3%, 4%, 0);
   }
 }
-@keyframes fsCardGlow {
+@keyframes fsLineFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* капля: чисто линейное движение, без easing на уровне animation,
+   easing задаётся только самим keyframes (по сути оно тут тоже линейное) */
+@keyframes fsLavaDropSmooth {
   0% {
-    transform: translate3d(-4%, -3%, 0) scale(1.05);
+    transform: translate3d(0, -16px, 0) scale(0.9, 1.1);
+    opacity: 0;
+  }
+  5% {
+    transform: translate3d(0, 0px, 0) scale(1.0, 1.0);
+    opacity: 1;
+  }
+  70% {
+    transform: translate3d(0, 100px, 0) scale(1.04, 0.97);
+    opacity: 1;
   }
   100% {
-    transform: translate3d(4%, 3%, 0) scale(1.08);
+    transform: translate3d(0, 160px, 0) scale(0.9, 1.08);
+    opacity: 0;
   }
 }
+
+/* НЕОНОВЫЕ КНОПКИ */
+.fs-btn {
+  position: relative;
+  overflow: hidden;
+}
+.fs-btn::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 10% 0%, rgba(248,113,113,0.2), transparent 55%);
+  opacity: 0;
+  transform: translate3d(-20%, 0, 0) rotate(8deg);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  pointer-events: none;
+}
+.fs-btn:hover::before {
+  opacity: 1;
+  transform: translate3d(10%, 0, 0) rotate(0deg);
+}
+.fs-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 0 24px rgba(248,113,113,0.9);
+}
+.fs-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 10px 22px rgba(15,23,42,0.9);
+}
+
+/* чипы */
+.fs-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(148,163,184,0.5);
+}
+
+/* ссылки */
+.fs-link-soft {
+  transition: color 0.18s ease-out, text-shadow 0.18s ease-out;
+}
+.fs-link-soft:hover {
+  color: #e5e7eb;
+  text-shadow: 0 0 10px rgba(148,163,184,0.7);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -923,223 +1272,287 @@ export default function Home() {
 }
 `}
       </style>
-      <main
-        style={{
-          minHeight: "100vh",
-          backgroundColor: "#020617",
-          backgroundImage:
-            "radial-gradient(circle at 0% 0%, rgba(56,189,248,0.22) 0, transparent 55%), radial-gradient(circle at 100% 0%, rgba(52,211,153,0.2) 0, transparent 55%), radial-gradient(circle at 50% 100%, rgba(59,130,246,0.2) 0, transparent 55%)",
-          color: "#ffffff",
-        }}
-      >
+
+      <main style={pageWrap}>
+        <div style={meshLayer} />
+        <div style={noiseLayer} />
+
         <Header onSellClick={() => setShowSell(true)} />
 
-        <section
-          style={{
-            minHeight: "calc(100vh - 70px)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 22,
-            padding: isMobile
-              ? "24px 14px 32px"
-              : "40px 24px",
-            maxWidth: 1120,
-            margin: "0 auto",
-            boxSizing: "border-box",
-          }}
-        >
-          <div
+        <div style={container}>
+          <section
             style={{
-              display: "grid",
-              gridTemplateColumns: isMobile
-                ? "minmax(0,1fr)"
-                : "minmax(0,1.3fr) minmax(0,1fr)",
-              gap: isMobile ? 18 : 24,
-              alignItems: "center",
+              minHeight: "calc(100vh - 70px)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 22,
             }}
           >
-            <div>
-              <h1
-                style={{
-                  fontSize: "clamp(30px, 5vw, 40px)",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: "#E0F2FE",
-                  marginBottom: 10,
-                  textShadow:
-                    "0 0 18px rgba(56,189,248,0.9), 0 0 36px rgba(56,189,248,0.8)",
-                  animation: "fsNeonPulse 5s ease-in-out infinite alternate",
-                }}
-              >
-                FofanShop
-              </h1>
-              <p
-                style={{
-                  color: "#9CA3AF",
-                  fontSize: "clamp(14px, 2.6vw, 16px)",
-                  maxWidth: 420,
-                  margin: 0,
-                }}
-              >
-                Продай технику без переписок и торга — мы сами оценим и заберём.
-              </p>
-
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 10,
-                }}
-              >
-                <button
-                  onClick={() => setShowSell(true)}
-                  style={{
-                    ...btnPrimary,
-                    boxShadow:
-                      "0 0 18px rgba(56,189,248,0.9), 0 0 34px rgba(34,197,94,0.7)",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  Заполнить анкету
-                </button>
-
-                <a href="/board" style={btnSecondary}>
-                  Смотреть выкупы
-                </a>
-              </div>
-
-              <div
-                style={{
-                  marginTop: 16,
-                  fontSize: "0.85rem",
-                  color: "#9CA3AF",
-                  maxWidth: 420,
-                }}
-              >
-                <div
-                  style={{
-                    opacity: 0.9,
-                    marginBottom: 6,
-                  }}
-                >
-                  Как это работает:
-                </div>
-                <ul
-                  style={{
-                    listStyle: "none",
-                    padding: 0,
-                    margin: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                  }}
-                >
-                  <li>1. Заполняешь короткую анкету за 1–2 минуты.</li>
-                  <li>2. Мы быстро оцениваем вещь и даём цену.</li>
-                  <li>3. Договариваемся о выкупе и оплате.</li>
-                </ul>
-              </div>
-            </div>
-
             <div
               style={{
-                position: "relative",
-                borderRadius: 24,
-                border: "1px solid rgba(148,163,184,0.35)",
-                background:
-                  "radial-gradient(circle at top left, rgba(56,189,248,0.12), transparent 60%), radial-gradient(circle at bottom right, rgba(34,197,94,0.12), transparent 60%), linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.9))",
-                boxShadow:
-                  "0 24px 70px rgba(15,23,42,0.95), 0 0 40px rgba(56,189,248,0.18)",
-                padding: "18px 20px 20px",
-                overflow: "hidden",
+                display: "grid",
+                gridTemplateColumns: isMobile
+                  ? "minmax(0,1fr)"
+                  : "minmax(0,1.3fr) minmax(0,1fr)",
+                gap: isMobile ? 18 : 24,
+                alignItems: "center",
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: "-30%",
-                  background:
-                    "radial-gradient(circle at 0% 0%, rgba(56,189,248,0.16), transparent 60%), radial-gradient(circle at 100% 100%, rgba(34,197,94,0.18), transparent 60%)",
-                  opacity: 0.7,
-                  pointerEvents: "none",
-                  mixBlendMode: "screen",
-                  animation: "fsCardGlow 8s ease-in-out infinite alternate",
-                }}
-              />
-              <div
-                style={{
-                  position: "relative",
-                }}
-              >
-                <div
+              <div>
+                <h1
                   style={{
-                    fontSize: "0.8rem",
-                    color: "#9CA3AF",
-                    marginBottom: 8,
+                    fontSize: "clamp(30px, 5vw, 40px)",
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "#fee2e2",
+                    marginBottom: 10,
                   }}
                 >
-                  Пример сделки
-                </div>
+                  FofanShop
+                </h1>
+                <p
+                  style={{
+                    color: "#e5e7eb",
+                    fontSize: "clamp(14px, 2.6vw, 16px)",
+                    maxWidth: 420,
+                    margin: 0,
+                  }}
+                >
+                  Продай технику без переписок и торга — мы сами
+                  оценим и заберём.
+                </p>
+
                 <div
                   style={{
-                    borderRadius: 16,
-                    border: "1px solid rgba(30,64,175,0.7)",
-                    padding: "10px 12px",
-                    background:
-                      "radial-gradient(circle at top, rgba(15,23,42,0.9) 0, rgba(15,23,42,1) 60%)",
-                    fontSize: "0.84rem",
+                    marginTop: 16,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 10,
+                  }}
+                >
+                  <button
+                    onClick={() => setShowSell(true)}
+                    style={{
+                      ...btnPrimary,
+                    }}
+                    className="fs-btn fs-btn-primary"
+                  >
+                    Заполнить анкету
+                  </button>
+
+                  <a
+                    href="/board"
+                    style={btnSecondary}
+                    className="fs-btn"
+                  >
+                    Смотреть выкупы
+                  </a>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    fontSize: "0.85rem",
+                    color: "#e5e7eb",
+                    maxWidth: 420,
                   }}
                 >
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 6,
+                      opacity: 0.95,
+                      marginBottom: 4,
                     }}
                   >
+                    • Честная оценка по фото, без «потом ещё
+                    скиньте».
+                  </div>
+                  <div
+                    style={{
+                      opacity: 0.9,
+                      marginBottom: 4,
+                    }}
+                  >
+                    • Работаем с телефонами, периферией и другой
+                    техникой.
+                  </div>
+                  <div
+                    style={{
+                      opacity: 0.85,
+                    }}
+                  >
+                    • Пишем в Telegram, не звоним без
+                    предупреждения.
+                  </div>
+                </div>
+              </div>
+
+              <TiltCard>
+                <div style={glassPanel}>
+                  <div style={glowBorder} />
+
+                  <div
+                    style={{
+                      position: "relative",
+                      zIndex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "0.9rem",
+                          color: "#e5e7eb",
+                        }}
+                      >
+                        Пример заявки
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "4px 9px",
+                          borderRadius: 999,
+                          border:
+                            "1px solid rgba(248,113,113,0.75)",
+                          color: "#fecaca",
+                          background:
+                            "rgba(15,23,42,0.98)",
+                        }}
+                      >
+                        Клиент · Киев
+                      </span>
+                    </div>
+
                     <div>
-                      <div style={{ color: "#e5e7eb" }}>
-                        iPhone 12, 128 ГБ
+                      <div
+                        style={{
+                          fontSize: "0.85rem",
+                          color: "#9CA3AF",
+                          marginBottom: 2,
+                        }}
+                      >
+                        Название
                       </div>
                       <div
                         style={{
-                          color: "#9CA3AF",
-                          fontSize: "0.78rem",
+                          fontSize: "0.95rem",
+                          color: "#e5e7eb",
                         }}
                       >
-                        Б/у, мелкие царапины
+                        iPhone 13 · 128 ГБ
                       </div>
                     </div>
+
                     <div
                       style={{
-                        textAlign: "right",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 8,
                         fontSize: "0.78rem",
-                        color: "#bbf7d0",
                       }}
                     >
-                      Выкуп: 14 000 грн
+                      <span
+                        style={{
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                          border:
+                            "1px solid rgba(248,113,113,0.8)",
+                          color: "#fecaca",
+                          background:
+                            "rgba(127,29,29,0.5)",
+                        }}
+                      >
+                        Состояние: Б/у
+                      </span>
+                      <span
+                        style={{
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                          border:
+                            "1px solid rgba(148,163,184,0.8)",
+                          color: "#e5e7eb",
+                          background:
+                            "rgba(15,23,42,0.96)",
+                        }}
+                      >
+                        Проблемы: экран, батарея
+                      </span>
+                      <span
+                        style={{
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                          border:
+                            "1px solid rgba(52,211,153,0.8)",
+                          color: "#bbf7d0",
+                          background:
+                            "rgba(22,163,74,0.25)",
+                        }}
+                      >
+                        Клиент хочет: 17 000 грн
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: "0.8rem",
+                        color: "#9CA3AF",
+                      }}
+                    >
+                      Комментарий: «Телефон в плёнке, не тонул.
+                      Заряд держит хуже, чем раньше».
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 10,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#9CA3AF",
+                        }}
+                      >
+                        Ожидает оценки скупщика…
+                      </div>
+                      <div
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: 999,
+                          border:
+                            "1px solid rgba(248,113,113,0.8)",
+                          color: "#fecaca",
+                          background:
+                            "rgba(15,23,42,0.96)",
+                        }}
+                      >
+                        Ответ до 24 часов
+                      </div>
                     </div>
                   </div>
-                  <div
-                    style={{
-                      marginTop: 6,
-                      fontSize: "0.78rem",
-                      color: "#9CA3AF",
-                    }}
-                  >
-                    Клиент заполнил анкету, отправил фото — мы оценили и
-                    забрали в тот же день.
-                  </div>
                 </div>
-              </div>
+              </TiltCard>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
-        {showSell && <SellWizard onClose={() => setShowSell(false)} />}
+        {showSell && (
+          <SellWizard onClose={() => setShowSell(false)} />
+        )}
       </main>
     </>
   );

@@ -41,7 +41,7 @@ const noiseLayer: CSSProperties = {
 const container: CSSProperties = {
   maxWidth: 1040,
   margin: "0 auto",
-  padding: "32px 18px 56px",
+  padding: "28px 18px 48px",
   boxSizing: "border-box",
   position: "relative",
   zIndex: 1,
@@ -49,12 +49,12 @@ const container: CSSProperties = {
 
 const glassCard: CSSProperties = {
   borderRadius: 28,
-  border: "1px solid rgba(248,113,113,0.4)",
+  border: "1px solid rgba(248,113,113,0.5)",
   background:
-    "linear-gradient(135deg, rgba(7,10,20,0.96), rgba(15,23,42,0.9))",
-  padding: "24px 22px 26px",
+    "linear-gradient(145deg, rgba(7,10,20,0.98), rgba(15,23,42,0.94))",
+  padding: "22px 20px 24px",
   boxShadow:
-    "0 30px 80px rgba(0,0,0,0.95), 0 0 55px rgba(15,23,42,0.9)",
+    "0 30px 80px rgba(0,0,0,0.96), 0 0 55px rgba(15,23,42,0.9)",
   backdropFilter: "blur(18px)",
   WebkitBackdropFilter: "blur(18px)",
   position: "relative",
@@ -67,7 +67,7 @@ const glowBorder: CSSProperties = {
   borderRadius: 28,
   border: "1px solid transparent",
   background:
-    "linear-gradient(120deg, rgba(248,113,113,0.85), rgba(251,191,36,0.7), rgba(248,113,113,0.9)) border-box",
+    "linear-gradient(120deg, rgba(248,113,113,0.9), rgba(251,191,36,0.65), rgba(248,113,113,0.9)) border-box",
   WebkitMask:
     "linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0)",
   WebkitMaskComposite: "xor",
@@ -76,8 +76,8 @@ const glowBorder: CSSProperties = {
 };
 
 const sectionTitle: CSSProperties = {
-  fontSize: "1.3rem",
-  marginBottom: 10,
+  fontSize: "1.2rem",
+  marginBottom: 8,
 };
 
 const smallMuted: CSSProperties = {
@@ -88,27 +88,33 @@ const smallMuted: CSSProperties = {
 const optionsGrid: CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-  gap: 20,
-  marginTop: 20,
+  gap: 18,
+  marginTop: 18,
 };
 
 const optionCardInner: CSSProperties = {
   borderRadius: 20,
   border: "1px solid rgba(248,113,113,0.45)",
-  padding: "16px 16px 18px",
+  padding: "16px 15px 18px",
   background:
-    "radial-gradient(circle at top left, rgba(248,113,113,0.22), transparent 60%), radial-gradient(circle at bottom right, rgba(37,99,235,0.65), transparent 60%), rgba(15,23,42,0.98)",
+    "radial-gradient(circle at top left, rgba(248,113,113,0.22), transparent 60%), radial-gradient(circle at bottom right, rgba(37,99,235,0.6), transparent 60%), rgba(7,10,20,0.98)",
 };
 
 const tiltWrapperBase: CSSProperties = {
   borderRadius: 20,
   transformStyle: "preserve-3d",
-  transition: "transform 0.18s ease-out, box-shadow 0.18s ease-out",
+  transition:
+    "transform 0.22s cubic-bezier(0.16, 0.84, 0.44, 1), box-shadow 0.22s ease-out",
 };
 
 const tiltWrapperHover: CSSProperties = {
   boxShadow:
-    "0 22px 60px rgba(0,0,0,0.95), 0 0 36px rgba(248,113,113,0.5)",
+    "0 24px 70px rgba(0,0,0,0.96), 0 0 38px rgba(248,113,113,0.5)",
+};
+
+const tiltWrapperExpanded: CSSProperties = {
+  boxShadow:
+    "0 18px 50px rgba(0,0,0,0.9), 0 0 26px rgba(15,23,42,0.9)",
 };
 
 const badgeFree: CSSProperties = {
@@ -120,7 +126,7 @@ const badgeFree: CSSProperties = {
   fontSize: "0.76rem",
   color: "#bbf7d0",
   background:
-    "linear-gradient(120deg, rgba(21,128,61,0.4), rgba(34,197,94,0.2))",
+    "linear-gradient(120deg, rgba(21,128,61,0.4), rgba(34,197,94,0.18))",
 };
 
 const badgePaid: CSSProperties = {
@@ -158,7 +164,7 @@ const btnGhost: CSSProperties = {
   borderRadius: 999,
   border: "1px solid rgba(148,163,184,0.8)",
   background:
-    "radial-gradient(circle at top, rgba(148,163,184,0.2), transparent 60%), rgba(15,23,42,0.95)",
+    "radial-gradient(circle at top, rgba(148,163,184,0.2), transparent 60%), rgba(15,23,42,0.97)",
   color: "#e5e7eb",
   cursor: "pointer",
   fontSize: "0.8rem",
@@ -182,7 +188,7 @@ const pill: CSSProperties = {
   padding: "4px 10px",
   fontSize: "0.76rem",
   color: "#fecaca",
-  background: "rgba(15,23,42,0.96)",
+  background: "rgba(15,23,42,0.98)",
 };
 
 const keyframesStyles = `
@@ -225,6 +231,9 @@ export default function RefundPage() {
   const [showFreeFull, setShowFreeFull] = useState(false);
   const [showPaidFull, setShowPaidFull] = useState(false);
 
+  const isFreeExpanded = showFreeFull;
+  const isPaidExpanded = showPaidFull;
+
   return (
     <>
       <style>{keyframesStyles}</style>
@@ -237,7 +246,7 @@ export default function RefundPage() {
               display: "flex",
               justifyContent: "space-between",
               gap: 10,
-              marginBottom: 24,
+              marginBottom: 22,
               alignItems: "center",
             }}
           >
@@ -272,12 +281,12 @@ export default function RefundPage() {
                   display: "flex",
                   flexDirection: "column",
                   gap: 6,
-                  marginBottom: 16,
+                  marginBottom: 14,
                 }}
               >
                 <h1
                   style={{
-                    fontSize: "2rem",
+                    fontSize: "1.9rem",
                     margin: 0,
                     letterSpacing: "0.18em",
                     textTransform: "uppercase",
@@ -306,14 +315,21 @@ export default function RefundPage() {
               </div>
 
               <div style={optionsGrid}>
-                <TiltCard>
-                  <div style={optionCardInner}>
+                <TiltCard active={!isFreeExpanded}>
+                  <div
+                    style={{
+                      ...optionCardInner,
+                      transform: isFreeExpanded
+                        ? "translateY(0px) scale(1.01)"
+                        : undefined,
+                    }}
+                  >
                     <div style={{ marginBottom: 8 }}>
                       <span style={badgeFree}>Бесплатно</span>
                     </div>
                     <h2
                       style={{
-                        fontSize: "1.08rem",
+                        fontSize: "1.06rem",
                         margin: 0,
                         marginBottom: 6,
                         color: "#e5e7eb",
@@ -335,6 +351,16 @@ export default function RefundPage() {
                           type="button"
                           style={btnGhost}
                           onClick={() => setShowFreeFull(true)}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-1px)";
+                            e.currentTarget.style.boxShadow =
+                              "0 10px 30px rgba(15,23,42,0.9)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "none";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
                           Показать полный гайд
                         </button>
@@ -359,6 +385,7 @@ export default function RefundPage() {
                             color: "#e5e7eb",
                           }}
                         >
+                          {/* блоки текста оставлены как у тебя */}
                           <div>
                             <strong>🔥 Вариант 1: “MAXIMUM” (надёжный)</strong>
                             <br />
@@ -462,8 +489,10 @@ export default function RefundPage() {
                             <br />
                             <br />
                             Автор гайда:{" "}
-                            <span style={{ color: "#f97373" }}>@RefFofan</span>.
-                            Бесплатно для подписчиков.
+                            <span style={{ color: "#f97373" }}>
+                              @RefFofan
+                            </span>
+                            . Бесплатно для подписчиков.
                           </div>
                         </div>
 
@@ -471,6 +500,16 @@ export default function RefundPage() {
                           type="button"
                           style={{ ...btnGhost, marginTop: 10 }}
                           onClick={() => setShowFreeFull(false)}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-1px)";
+                            e.currentTarget.style.boxShadow =
+                              "0 10px 30px rgba(15,23,42,0.9)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "none";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
                           Свернуть гайд
                         </button>
@@ -479,14 +518,21 @@ export default function RefundPage() {
                   </div>
                 </TiltCard>
 
-                <TiltCard>
-                  <div style={optionCardInner}>
+                <TiltCard active={!isPaidExpanded}>
+                  <div
+                    style={{
+                      ...optionCardInner,
+                      transform: isPaidExpanded
+                        ? "translateY(0px) scale(1.01)"
+                        : undefined,
+                    }}
+                  >
                     <div style={{ marginBottom: 8 }}>
                       <span style={badgePaid}>Платно</span>
                     </div>
                     <h2
                       style={{
-                        fontSize: "1.08rem",
+                        fontSize: "1.06rem",
                         margin: 0,
                         marginBottom: 6,
                         color: "#fee2e2",
@@ -507,6 +553,16 @@ export default function RefundPage() {
                           type="button"
                           style={btnGhost}
                           onClick={() => setShowPaidFull(true)}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-1px)";
+                            e.currentTarget.style.boxShadow =
+                              "0 10px 30px rgba(15,23,42,0.9)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "none";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
                           Показать, что входит
                         </button>
@@ -535,13 +591,19 @@ export default function RefundPage() {
                           <li>Рефаунд Temu (техника и одежда).</li>
                           <li>Рефаунд AliExpress (техника и одежда).</li>
                           <li>Рефаунд спортпита iHerb до 150 долларов.</li>
-                          <li>Рефаунд Pinduoduo с лимитом 100–150 долларов.</li>
-                          <li>Подробный мануал по заказам с китайских площадок.</li>
+                          <li>
+                            Рефаунд Pinduoduo с лимитом 100–150 долларов.
+                          </li>
+                          <li>
+                            Подробный мануал по заказам с китайских площадок.
+                          </li>
                           <li>
                             Поставщики с Pinduoduo, Taobao, 1688 и других
                             китайских платформ.
                           </li>
-                          <li>Чёрный ресейл и работа с товаром после выкупа.</li>
+                          <li>
+                            Чёрный ресейл и работа с товаром после выкупа.
+                          </li>
                           <li>
                             Контакты людей для отрисовки, скупки, прокси и
                             смежных задач.
@@ -579,6 +641,17 @@ export default function RefundPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={btnPrimary}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform =
+                                "translateY(-1px) scale(1.01)";
+                              e.currentTarget.style.boxShadow =
+                                "0 22px 55px rgba(127,29,29,0.95)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "none";
+                              e.currentTarget.style.boxShadow =
+                                "0 18px 40px rgba(127,29,29,0.8)";
+                            }}
                           >
                             Связаться в Telegram (@RefFofan)
                           </a>
@@ -586,6 +659,16 @@ export default function RefundPage() {
                             type="button"
                             style={btnGhost}
                             onClick={() => setShowPaidFull(false)}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform =
+                                "translateY(-1px)";
+                              e.currentTarget.style.boxShadow =
+                                "0 10px 30px rgba(15,23,42,0.9)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "none";
+                              e.currentTarget.style.boxShadow = "none";
+                            }}
                           >
                             Свернуть описание
                           </button>
@@ -596,7 +679,7 @@ export default function RefundPage() {
                 </TiltCard>
               </div>
 
-              <div style={{ marginTop: 26 }}>
+              <div style={{ marginTop: 24 }}>
                 <h2 style={sectionTitle}>Отзывы учеников</h2>
                 <p style={smallMuted}>
                   Все реальные отзывы, скрины из приватки и результаты учеников
@@ -612,7 +695,15 @@ export default function RefundPage() {
                   style={{
                     ...btnPrimary,
                     marginTop: 8,
-                    animation: "glow-pulse 2.6s ease-in-out infinite alternate",
+                    animation:
+                      "glow-pulse 2.6s ease-in-out infinite alternate",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform =
+                      "translateY(-1px) scale(1.01)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
                   }}
                 >
                   Смотреть отзывы в Telegram
@@ -626,13 +717,21 @@ export default function RefundPage() {
   );
 }
 
-function TiltCard({ children }: { children: React.ReactNode }) {
+function TiltCard({
+  children,
+  active,
+}: {
+  children: React.ReactNode;
+  active: boolean;
+}) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState(false);
   const [transform, setTransform] =
     useState<string>("perspective(900px)");
 
   const handleMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!active) return;
+
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -660,10 +759,11 @@ function TiltCard({ children }: { children: React.ReactNode }) {
       ref={ref}
       style={{
         ...(tiltWrapperBase as CSSProperties),
-        ...(hover ? tiltWrapperHover : {}),
-        transform,
+        ...(active && hover ? tiltWrapperHover : {}),
+        ...(!active ? tiltWrapperExpanded : {}),
+        transform: active ? transform : "perspective(900px)",
       }}
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={() => active && setHover(true)}
       onMouseLeave={() => {
         setHover(false);
         reset();
