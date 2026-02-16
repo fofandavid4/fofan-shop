@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  type CSSProperties,
-  useEffect,
-  useRef,
-  type MouseEvent,
-} from "react";
+import React, { useState, type CSSProperties, useEffect } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 
@@ -57,8 +51,7 @@ const glassPanel: CSSProperties = {
   background:
     "linear-gradient(135deg, rgba(7,10,20,0.96), rgba(15,23,42,0.92))",
   padding: "22px 18px 24px",
-  boxShadow:
-    "0 30px 80px rgba(0,0,0,0.96), 0 0 55px rgba(127,29,29,0.8)",
+  boxShadow: "0 30px 80px rgba(0,0,0,0.96), 0 0 55px rgba(127,29,29,0.8)",
   backdropFilter: "blur(18px)",
   WebkitBackdropFilter: "blur(18px)",
   position: "relative",
@@ -159,68 +152,6 @@ const labelStyle: CSSProperties = {
   color: "#9CA3AF",
   marginBottom: "2px",
 };
-
-// === TILT ===
-
-const tiltWrapperBase: CSSProperties = {
-  borderRadius: 28,
-  transformStyle: "preserve-3d",
-  transition: "transform 0.18s ease-out, box-shadow 0.18s ease-out",
-};
-
-const tiltWrapperHover: CSSProperties = {
-  boxShadow:
-    "0 26px 80px rgba(0,0,0,0.96), 0 0 40px rgba(248,113,113,0.55)",
-};
-
-function TiltCard({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [hover, setHover] = useState(false);
-  const [transform, setTransform] =
-    useState<string>("perspective(900px)");
-
-  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const midX = rect.width / 2;
-    const midY = rect.height / 2;
-
-    const rX = ((y - midY) / midY) * -6;
-    const rY = ((x - midX) / midX) * 6;
-
-    setTransform(
-      `perspective(900px) rotateX(${rX.toFixed(
-        2,
-      )}deg) rotateY(${rY.toFixed(2)}deg) scale(1.01)`,
-    );
-  };
-
-  const reset = () => {
-    setTransform("perspective(900px)");
-  };
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        ...(tiltWrapperBase as CSSProperties),
-        ...(hover ? tiltWrapperHover : {}),
-        transform,
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => {
-        setHover(false);
-        reset();
-      }}
-      onMouseMove={handleMove}
-    >
-      {children}
-    </div>
-  );
-}
 
 // === HEADER + ЛИНИЯ + КАПЛЯ ===
 
@@ -357,7 +288,6 @@ function Header({ onSellClick }: { onSellClick: () => void }) {
         </div>
       </header>
 
-      {/* линия + капля без остановок */}
       <div
         style={{
           width: "100%",
@@ -468,10 +398,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
 
       const problems_description =
         condition === "used" ? problemsDesc || "" : "";
-      formData.append(
-        "problems_description",
-        problems_description,
-      );
+      formData.append("problems_description", problems_description);
 
       formData.append(
         "price_client",
@@ -594,9 +521,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
               }}
             />
           </div>
-          <span
-            style={{ fontSize: "0.75rem", color: "#9CA3AF" }}
-          >
+          <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
             Шаг {step + 1} из {totalSteps}
           </span>
         </div>
@@ -650,9 +575,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   zIndex: 1,
                 }}
               >
-                <h3
-                  style={{ fontSize: "1rem", margin: 0 }}
-                >
+                <h3 style={{ fontSize: "1rem", margin: 0 }}>
                   Базовая информация
                 </h3>
 
@@ -662,9 +585,11 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   </div>
                   <input
                     style={inputStyle}
-                    placeholder="iPhone 13, Logitech G Pro..."
+                    placeholder="POCO C75, Redmi Note 14..."
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) =>
+                      setTitle(e.target.value)
+                    }
                   />
                 </div>
 
@@ -699,13 +624,17 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     >
                       <option value="">Выберите</option>
                       <option value="mechanical">
-                        Механическая
+                        Механическая клавиатура
                       </option>
                       <option value="membrane">
-                        Мембранная
+                        Мембранная клавиатура
                       </option>
-                      <option value="gaming">Игровая</option>
-                      <option value="office">Офисная</option>
+                      <option value="gaming">
+                        Игровая клавиатура/мышь
+                      </option>
+                      <option value="office">
+                        Офисная клавиатура/мышь
+                      </option>
                     </select>
                   </div>
                 )}
@@ -724,10 +653,10 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     >
                       <option value="">Выберите</option>
                       <option value="powerbank">
-                        Пауэрбанк
+                        Повербанк
                       </option>
                       <option value="charging">
-                        Зарядная станция
+                        Зарядная станция / зарядка
                       </option>
                       <option value="clothes">Одежда</option>
                       <option value="other">Другое</option>
@@ -798,17 +727,14 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                         "Экран",
                         "Батарея",
                         "Корпус",
-                        "Камера/звук/микрофон",
+                        "Камера / звук / микрофон",
                         "Другое",
                       ].map((p) => {
-                        const active =
-                          problems.includes(p);
+                        const active = problems.includes(p);
                         return (
                           <button
                             key={p}
-                            onClick={() =>
-                              toggleProblem(p)
-                            }
+                            onClick={() => toggleProblem(p)}
                             style={
                               active
                                 ? {
@@ -838,12 +764,10 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                           minHeight: 60,
                           resize: "vertical",
                         }}
-                        placeholder="Царапины, не держит батарея..."
+                        placeholder="Например: мелкие царапины, слабая батарея, трещина на стекле..."
                         value={problemsDesc}
                         onChange={(e) =>
-                          setProblemsDesc(
-                            e.target.value,
-                          )
+                          setProblemsDesc(e.target.value)
                         }
                       />
                     </div>
@@ -857,7 +781,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                   <input
                     type="number"
                     style={inputStyle}
-                    placeholder="5000"
+                    placeholder="Например: 4000"
                     value={price}
                     onChange={(e) =>
                       setPrice(e.target.value)
@@ -889,15 +813,15 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     margin: 0,
                   }}
                 >
-                  Загрузите от 1 до 10 фото.
+                  Загрузите от 1 до 10 фото. Чем понятнее фото —
+                  тем быстрее сможем дать предложение.
                 </p>
 
                 <label
                   style={{
                     ...btnSecondary,
                     borderStyle: "dashed",
-                    borderColor:
-                      "rgba(248,113,113,0.8)",
+                    borderColor: "rgba(248,113,113,0.8)",
                     padding: "10px 16px",
                     justifyContent: "center",
                     width: "100%",
@@ -1011,8 +935,8 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                     color: "#9CA3AF",
                   }}
                 >
-                  Фото будут загружены на сервер вместе
-                  с заявкой.
+                  Фото будут загружены на сервер вместе с
+                  заявкой.
                 </p>
               </div>
             )}
@@ -1045,8 +969,7 @@ function SellWizard({ onClose }: { onClose: () => void }) {
                 </div>
                 <div>
                   <div style={labelStyle}>
-                    Контакт (Telegram @, телефон или
-                    другое)
+                    Контакт (Telegram @, телефон или другое)
                   </div>
                   <input
                     style={inputStyle}
@@ -1157,6 +1080,163 @@ function SellWizard({ onClose }: { onClose: () => void }) {
   );
 }
 
+// === ПРИМЕР ЗАЯВКИ (РУССКИЙ) ===
+
+function ExampleRequestCard() {
+  return (
+    <div style={glassPanel}>
+      <div style={glowBorder} />
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "0.9rem",
+              color: "#e5e7eb",
+              fontWeight: 600,
+            }}
+          >
+            Пример заявки
+          </div>
+          <span
+            style={{
+              fontSize: "0.75rem",
+              padding: "4px 9px",
+              borderRadius: 999,
+              border: "1px solid rgba(248,113,113,0.75)",
+              color: "#fecaca",
+              background: "rgba(15,23,42,0.98)",
+            }}
+          >
+            Клиент · Киев
+          </span>
+        </div>
+
+        <div>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              color: "#9CA3AF",
+              marginBottom: 2,
+            }}
+          >
+            Название
+          </div>
+          <div
+            style={{
+              fontSize: "0.95rem",
+              color: "#e5e7eb",
+              fontWeight: 600,
+            }}
+          >
+            iPhone 13 · 128 ГБ
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            fontSize: "0.78rem",
+          }}
+        >
+          <span
+            style={{
+              padding: "3px 8px",
+              borderRadius: 999,
+              border: "1px solid rgba(248,113,113,0.8)",
+              color: "#fecaca",
+              background: "rgba(127,29,29,0.5)",
+            }}
+          >
+            Состояние: б/у
+          </span>
+          <span
+            style={{
+              padding: "3px 8px",
+              borderRadius: 999,
+              border: "1px solid rgba(148,163,184,0.8)",
+              color: "#e5e7eb",
+              background: "rgba(15,23,42,0.96)",
+            }}
+          >
+            Проблемы: экран, батарея
+          </span>
+          <span
+            style={{
+              padding: "3px 8px",
+              borderRadius: 999,
+              border: "1px solid rgba(52,211,153,0.8)",
+              color: "#bbf7d0",
+              background: "rgba(22,163,74,0.25)",
+            }}
+          >
+            Клиент хочет: 17 000 грн
+          </span>
+        </div>
+
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: "0.8rem",
+            color: "#9CA3AF",
+          }}
+        >
+          Комментарий: «Телефон всегда в чехле, не купался.
+          Заряд держит хуже, чем раньше».
+        </div>
+
+        <div
+          style={{
+            marginTop: 10,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10,
+            fontSize: "0.8rem",
+          }}
+        >
+          <div
+            style={{
+              color: "#9CA3AF",
+            }}
+          >
+            Ожидает оценки скупщика…
+          </div>
+          <div
+            style={{
+              padding: "4px 10px",
+              borderRadius: 999,
+              border:
+                "1px solid rgba(248,113,113,0.8)",
+              color: "#fecaca",
+              background: "rgba(15,23,42,0.96)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Ответ до 24 часов
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // === ГЛАВНАЯ СТРАНИЦА ===
 
 export default function Home() {
@@ -1198,8 +1278,7 @@ export default function Home() {
   100% { background-position: 0% 50%; }
 }
 
-/* капля: чисто линейное движение, без easing на уровне animation,
-   easing задаётся только самим keyframes (по сути оно тут тоже линейное) */
+/* капля */
 @keyframes fsLavaDropSmooth {
   0% {
     transform: translate3d(0, -16px, 0) scale(0.9, 1.1);
@@ -1373,8 +1452,8 @@ export default function Home() {
                       marginBottom: 4,
                     }}
                   >
-                    • Работаем с телефонами, периферией и другой
-                    техникой.
+                    • Работаем с телефонами, периферией,
+                    клавиатурами, мышками и другой техникой.
                   </div>
                   <div
                     style={{
@@ -1385,167 +1464,90 @@ export default function Home() {
                     предупреждения.
                   </div>
                 </div>
-              </div>
 
-              <TiltCard>
-                <div style={glassPanel}>
-                  <div style={glowBorder} />
+                <div
+                  style={{
+                    marginTop: 18,
+                    padding: "12px 14px",
+                    borderRadius: 16,
+                    border: "1px solid rgba(148,163,184,0.6)",
+                    background:
+                      "radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(15,23,42,0.98))",
+                    fontSize: "0.8rem",
+                    color: "#e5e7eb",
+                    maxWidth: 420,
+                  }}
+                >
+                  <div
+                    style={{
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      color: "#fee2e2",
+                    }}
+                  >
+                    Ориентировочный прайс-лист
+                  </div>
 
                   <div
                     style={{
-                      position: "relative",
-                      zIndex: 1,
                       display: "flex",
                       flexDirection: "column",
-                      gap: 10,
+                      gap: 4,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "0.9rem",
-                          color: "#e5e7eb",
-                        }}
-                      >
-                        Пример заявки
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "4px 9px",
-                          borderRadius: 999,
-                          border:
-                            "1px solid rgba(248,113,113,0.75)",
-                          color: "#fecaca",
-                          background:
-                            "rgba(15,23,42,0.98)",
-                        }}
-                      >
-                        Клиент · Киев
-                      </span>
-                    </div>
-
                     <div>
-                      <div
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "#9CA3AF",
-                          marginBottom: 2,
-                        }}
-                      >
-                        Название
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.95rem",
-                          color: "#e5e7eb",
-                        }}
-                      >
-                        iPhone 13 · 128 ГБ
-                      </div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        POCO C85 · 8/256 ГБ:
+                      </span>{" "}
+                      4 000 грн
                     </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 8,
-                        fontSize: "0.78rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          padding: "3px 8px",
-                          borderRadius: 999,
-                          border:
-                            "1px solid rgba(248,113,113,0.8)",
-                          color: "#fecaca",
-                          background:
-                            "rgba(127,29,29,0.5)",
-                        }}
-                      >
-                        Состояние: Б/у
-                      </span>
-                      <span
-                        style={{
-                          padding: "3px 8px",
-                          borderRadius: 999,
-                          border:
-                            "1px solid rgba(148,163,184,0.8)",
-                          color: "#e5e7eb",
-                          background:
-                            "rgba(15,23,42,0.96)",
-                        }}
-                      >
-                        Проблемы: экран, батарея
-                      </span>
-                      <span
-                        style={{
-                          padding: "3px 8px",
-                          borderRadius: 999,
-                          border:
-                            "1px solid rgba(52,211,153,0.8)",
-                          color: "#bbf7d0",
-                          background:
-                            "rgba(22,163,74,0.25)",
-                        }}
-                      >
-                        Клиент хочет: 17 000 грн
-                      </span>
+                    <div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        POCO C75 · 8/256 ГБ:
+                      </span>{" "}
+                      3 750 грн
                     </div>
-
-                    <div
-                      style={{
-                        marginTop: 6,
-                        fontSize: "0.8rem",
-                        color: "#9CA3AF",
-                      }}
-                    >
-                      Комментарий: «Телефон в плёнке, не тонул.
-                      Заряд держит хуже, чем раньше».
+                    <div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        POCO C71 · 4/128 ГБ:
+                      </span>{" "}
+                      2 450 грн
                     </div>
-
-                    <div
-                      style={{
-                        marginTop: 10,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: 10,
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      <div
-                        style={{
-                          color: "#9CA3AF",
-                        }}
-                      >
-                        Ожидает оценки скупщика…
-                      </div>
-                      <div
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: 999,
-                          border:
-                            "1px solid rgba(248,113,113,0.8)",
-                          color: "#fecaca",
-                          background:
-                            "rgba(15,23,42,0.96)",
-                        }}
-                      >
-                        Ответ до 24 часов
-                      </div>
+                    <div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        Redmi A5 · 4/128 ГБ:
+                      </span>{" "}
+                      2 750 грн
+                    </div>
+                    <div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        Redmi Note 14 · 8/256 ГБ (NFC):
+                      </span>{" "}
+                      6 300 грн
+                    </div>
+                    <div>
+                      <span style={{ color: "#9CA3AF" }}>
+                        Redmi 13 · 8/256 ГБ (NFC):
+                      </span>{" "}
+                      4 500 грн
                     </div>
                   </div>
+
+                  <div
+                    style={{
+                      marginTop: 8,
+                      color: "#9CA3AF",
+                    }}
+                  >
+                    Цены ориентировочные и могут меняться. Если у вас
+                    другая модель телефона, клавиатура, мышь или любая
+                    другая техника — просто подайте заявку, и мы
+                    предложим актуальную цену.
+                  </div>
                 </div>
-              </TiltCard>
+              </div>
+
+              <ExampleRequestCard />
             </div>
           </section>
         </div>

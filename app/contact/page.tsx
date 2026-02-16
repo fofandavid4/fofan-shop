@@ -83,7 +83,8 @@ export default function ContactPage() {
               maxWidth: 520,
             }}
           >
-            Если остались вопросы по выкупу, рефаунду или объявлениям — напишите мне любым удобным способом.
+            Если остались вопросы по выкупу, рефаунду или объявлениям —
+            напишите мне в Telegram.
           </p>
 
           <div
@@ -118,11 +119,13 @@ export default function ContactPage() {
               }}
             >
               <span>📱</span>
-              <span style={{ color: "#9CA3AF", fontSize: "0.85rem" }}>
+              <span
+                style={{ color: "#9CA3AF", fontSize: "0.85rem" }}
+              >
                 Telegram:
               </span>
               <a
-                href="https://t.me/your_nick"
+                href="https://t.me/RefFofan"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -131,31 +134,7 @@ export default function ContactPage() {
                   fontSize: "0.9rem",
                 }}
               >
-                @your_nick
-              </a>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: "0.9rem",
-              }}
-            >
-              <span>📧</span>
-              <span style={{ color: "#9CA3AF", fontSize: "0.85rem" }}>
-                Email:
-              </span>
-              <a
-                href="mailto:you@example.com"
-                style={{
-                  color: "#f97373",
-                  textDecoration: "none",
-                  fontSize: "0.9rem",
-                }}
-              >
-                you@example.com
+                @RefFofan
               </a>
             </div>
           </div>
@@ -201,7 +180,8 @@ export default function ContactPage() {
                     width: "100%",
                     padding: "8px 10px",
                     borderRadius: 10,
-                    border: "1px solid rgba(148,163,184,0.5)",
+                    border:
+                      "1px solid rgba(148,163,184,0.5)",
                     background: "rgba(15,23,42,0.96)",
                     color: "#fff",
                     fontSize: "0.9rem",
@@ -226,7 +206,8 @@ export default function ContactPage() {
                     width: "100%",
                     padding: "8px 10px",
                     borderRadius: 10,
-                    border: "1px solid rgba(148,163,184,0.5)",
+                    border:
+                      "1px solid rgba(148,163,184,0.5)",
                     background: "rgba(15,23,42,0.96)",
                     color: "#fff",
                     fontSize: "0.9rem",
@@ -240,7 +221,9 @@ export default function ContactPage() {
               </div>
               <button
                 onClick={() =>
-                  alert("Форма‑заглушка: позже подключим отправку!")
+                  alert(
+                    "Форма-заглушка: напишите мне напрямую в Telegram @RefFofan",
+                  )
                 }
                 style={{
                   padding: "9px 20px",
@@ -259,13 +242,16 @@ export default function ContactPage() {
                     "transform 0.16s ease-out, box-shadow 0.16s ease-out",
                 }}
                 onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLButtonElement;
-                  el.style.transform = "translateY(-1px) scale(1.01)";
+                  const el =
+                    e.currentTarget as HTMLButtonElement;
+                  el.style.transform =
+                    "translateY(-1px) scale(1.01)";
                   el.style.boxShadow =
                     "0 22px 55px rgba(127,29,29,0.95)";
                 }}
                 onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLButtonElement;
+                  const el =
+                    e.currentTarget as HTMLButtonElement;
                   el.style.transform = "none";
                   el.style.boxShadow =
                     "0 18px 40px rgba(127,29,29,0.8)";
