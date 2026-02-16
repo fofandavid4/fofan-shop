@@ -155,9 +155,10 @@ export default function BuyerPage() {
   async function loadItems() {
     setLoading(true);
     try {
-      const data = await apiFetch<BuyerItem[]>({
+      const res = await apiFetch({
         path: "/api/items/buyer",
       });
+      const data = (await res.json()) as BuyerItem[];
       setItems(data);
 
       const p: Record<number, string> = {};
@@ -203,12 +204,13 @@ export default function BuyerPage() {
             : null,
       };
 
-      const updated = await apiFetch<BuyerItem>({
+      const res = await apiFetch({
         path: `/api/items/${id}/buyer`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      const updated = (await res.json()) as BuyerItem;
 
       setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
 

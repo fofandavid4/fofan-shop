@@ -2,13 +2,15 @@ export async function apiFetch(opts: {
   path: string;
   method?: string;
   body?: any;
+  headers?: HeadersInit;
 }) {
-  const { path, method = "GET", body } = opts;
+  const { path, method = "GET", body, headers } = opts;
 
   try {
     const res = await fetch(path.startsWith("/") ? path : "/" + path, {
       method,
       body,
+      headers,
     });
 
     if (!res.ok) {

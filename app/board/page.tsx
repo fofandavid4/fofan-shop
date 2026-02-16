@@ -96,9 +96,10 @@ export default function BoardPage() {
     setLoading(true);
     try {
       const params = cat ? `?category=${cat}` : "";
-      const data = await apiFetch<PublicItem[]>({
+      const res = await apiFetch({
         path: `/api/items/public${params}`,
       });
+      const data = (await res.json()) as PublicItem[];
       setItems(data ?? []);
     } catch (e) {
       console.error(e);
