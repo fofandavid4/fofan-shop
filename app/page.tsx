@@ -2,7 +2,6 @@
 
 import React, { useState, type CSSProperties, useEffect } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
 
 // === БАЗОВЫЕ СТИЛИ / ТЁМНО‑КРАСНАЯ ТЕМА ===
 
@@ -330,6 +329,9 @@ function Header({ onSellClick }: { onSellClick: () => void }) {
 type Category = "phone" | "keyboard_mouse" | "other";
 type Condition = "new" | "used";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
 function SellWizard({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(0);
   const [category, setCategory] = useState<Category | "">("");
@@ -411,11 +413,14 @@ function SellWizard({ onClose }: { onClose: () => void }) {
         formData.append("images", file);
       });
 
-      await apiFetch({
-        path: "/api/items",
+      const res = await fetch(`${API_URL}/api/items`, {
         method: "POST",
         body: formData,
       });
+
+      if (!res.ok) {
+        throw new Error("Bad status " + res.status);
+      }
 
       setSubmitted(true);
     } catch (e) {
