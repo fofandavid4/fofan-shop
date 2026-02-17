@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
-import { apiFetch, getApiFileUrl } from "@/lib/api";
 
 interface PublicItem {
   id: number;
@@ -13,6 +12,22 @@ interface PublicItem {
   city: string | null;
   deal_status: string;
   photos?: string[] | null;
+}
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "https://fofan-backend-production.up.railway.app";
+
+function getApiFileUrl(path: string) {
+  // если backend отдаёт уже полный URL, просто возвращаем
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  // если в БД лежит путь типа "/uploads/xxx.jpg"
+  if (path.startsWith("/")) {
+    return `${API_URL}${path}`;
+  }
+  // если в БД лежит только имя файла "xxx.jpg"
+  return `${API_URL}/uploads/${path}`;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -96,14 +111,16 @@ export default function BoardPage() {
     setLoading(true);
     try {
       const params = cat ? `?category=${cat}` : "";
-      const res = await apiFetch({
-        path: `/api/items/public${params}`,
+      const res = await fetch(`${API_URL}/api/items/public${params}`, {
+        cache: "no-store",
       });
+      if (!res.ok) throw new Error("Bad status");
       const data = (await res.json()) as PublicItem[];
       setItems(data ?? []);
     } catch (e) {
       console.error(e);
       alert("Не удалось загрузить объявления");
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -231,7 +248,7 @@ export default function BoardPage() {
                   : [];
                 const hasPhotos = photos.length > 0;
                 const thumbnail = hasPhotos
-                  ? getApiFileUrl(photos[0])
+                  ? getApiFileUrl(photos[0] as string)
                   : null;
 
                 return (
@@ -602,7 +619,7 @@ export default function BoardPage() {
                             }}
                           >
                             <img
-                              src={getApiFileUrl(p)}
+                              src={getApiFileUrl(p as string)}
                               alt={`photo-${idx + 1}`}
                               style={{
                                 width: "100%",
