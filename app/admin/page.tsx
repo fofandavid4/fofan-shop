@@ -35,7 +35,9 @@ const categoryLabel: Record<string, string> = {
   other: "Другое",
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://fofan-backend-production.up.railway.app";
 
 // логин/пароль из env
 const ADMIN_LOGIN =
@@ -164,6 +166,25 @@ const shellGlow: CSSProperties = {
 type PublishFilter = "all" | "public" | "private";
 type SortKey = "date_desc" | "price_desc" | "price_asc" | "id_asc";
 
+function getFullPhotoUrl(path: string) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  if (!API_BASE) return path;
+  if (path.startsWith("/")) {
+    return `${API_BASE}${path}`;
+  }
+  return `${API_BASE}/uploads/${path}`;
+}
+
+const renderBuyerStatusLabel = (status?: string | null) => {
+  if (!status) return "—";
+  if (status === "interested") return "Интересно";
+  if (status === "not_interested") return "Не интересно";
+  return status;
+};
+
 export default function AdminPage() {
   const [items, setItems] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,7 +212,9 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/items/admin`);
+      const res = await fetch(`${API_BASE}/api/items/admin`, {
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error("Failed to load");
       const data = (await res.json()) as AdminItem[];
       setItems(data);
@@ -263,20 +286,6 @@ export default function AdminPage() {
       setDeletingId(null);
     }
   }
-
-  const getFullPhotoUrl = (path: string) => {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    if (!API_BASE) return path;
-    return `${API_BASE}${path}`;
-  };
-
-  const renderBuyerStatusLabel = (status?: string | null) => {
-    if (!status) return "—";
-    if (status === "interested") return "Интересно";
-    if (status === "not_interested") return "Не интересно";
-    return status;
-  };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -555,7 +564,8 @@ export default function AdminPage() {
                   marginTop: 8,
                   padding: "9px 18px",
                   borderRadius: 999,
-                  border: "1px solid rgba(248,113,113,0.9)",
+                  border:
+                    "1px solid rgba(248,113,113,0.9)",
                   background:
                     "linear-gradient(120deg, #f97373 0%, #fb923c 35%, #facc15 70%, #f97373 100%)",
                   color: "#020617",
@@ -1312,41 +1322,45 @@ export default function AdminPage() {
                               paddingBottom: 4,
                             }}
                           >
-                            {selected.photos.map((p, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() =>
-                                  setPhotoIndex(idx)
-                                }
-                                style={{
-                                  width: 64,
-                                  height: 64,
-                                  borderRadius: 14,
-                                  overflow: "hidden",
-                                  border:
-                                    idx === photoIndex
-                                      ? "1px solid #22c55e"
-                                      : "1px solid rgba(148,163,184,0.6)",
-                                  padding: 0,
-                                  background:
-                                    "transparent",
-                                  cursor: "pointer",
-                                  flex: "0 0 auto",
-                                }}
-                              >
-                                <img
-                                  src={getFullPhotoUrl(p)}
-                                  alt={`photo-${idx + 1}`}
+                            {selected.photos.map(
+                              (p, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() =>
+                                    setPhotoIndex(idx)
+                                  }
                                   style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    display: "block",
+                                    width: 64,
+                                    height: 64,
+                                    borderRadius: 14,
+                                    overflow: "hidden",
+                                    border:
+                                      idx === photoIndex
+                                        ? "1px solid #22c55e"
+                                        : "1px solid rgba(148,163,184,0.6)",
+                                    padding: 0,
+                                    background:
+                                      "transparent",
+                                    cursor: "pointer",
+                                    flex: "0 0 auto",
                                   }}
-                                />
-                              </button>
-                            ))}
+                                >
+                                  <img
+                                    src={getFullPhotoUrl(
+                                      p,
+                                    )}
+                                    alt={`photo-${idx + 1}`}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      display: "block",
+                                    }}
+                                  />
+                                </button>
+                              ),
+                            )}
                           </div>
                         )}
                       </div>
@@ -1433,7 +1447,9 @@ export default function AdminPage() {
                         >
                           Город
                         </div>
-                        <div>{selected.city || "—"}</div>
+                        <div>
+                          {selected.city || "—"}
+                        </div>
                       </div>
                       <div>
                         <div
@@ -1493,7 +1509,8 @@ export default function AdminPage() {
                       </div>
                     )}
 
-                  {selected.problems_description && (
+                  {selected
+                    .problems_description && (
                     <div style={{ marginTop: 8 }}>
                       <div
                         style={{
