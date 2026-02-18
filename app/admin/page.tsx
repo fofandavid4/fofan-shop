@@ -166,6 +166,7 @@ const shellGlow: CSSProperties = {
 type PublishFilter = "all" | "public" | "private";
 type SortKey = "date_desc" | "price_desc" | "price_asc" | "id_asc";
 
+/** Нормализуем путь до фото */
 function getFullPhotoUrl(path: string) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) {
@@ -176,6 +177,15 @@ function getFullPhotoUrl(path: string) {
     return `${API_BASE}${path}`;
   }
   return `${API_BASE}/uploads/${path}`;
+}
+
+/** Нормализуем массив фоток: только непустые строки */
+function normalizePhotos(photos?: string[] | null): string[] {
+  if (!Array.isArray(photos)) return [];
+  return photos
+    .filter((p) => typeof p === "string")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
 }
 
 const renderBuyerStatusLabel = (status?: string | null) => {
@@ -209,7 +219,6 @@ export default function AdminPage() {
       alert("API URL не настроен. Обратитесь к администратору.");
       return;
     }
-
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/items/admin`, {
@@ -217,7 +226,7 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error("Failed to load");
       const data = (await res.json()) as AdminItem[];
-      setItems(data);
+      setItems(data ?? []);
     } catch (e) {
       console.error(e);
       alert("Не удалось загрузить заявки");
@@ -440,7 +449,9 @@ export default function AdminPage() {
                   />
                   <input
                     value={login}
-                    onChange={(e) => setLogin(e.target.value)}
+                    onChange={(e) =>
+                      setLogin(e.target.value)
+                    }
                     style={{
                       width: "100%",
                       padding: "8px 10px",
@@ -711,9 +722,9 @@ export default function AdminPage() {
               type="text"
               placeholder="Поиск по названию или городу"
               value={search}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setSearch(e.target.value)
-              }
+              onChange={(
+                e: ChangeEvent<HTMLInputElement>,
+              ) => setSearch(e.target.value)}
               style={{
                 ...inputFilter,
                 minWidth: 220,
@@ -722,7 +733,9 @@ export default function AdminPage() {
             />
             <select
               value={publishFilter}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              onChange={(
+                e: ChangeEvent<HTMLSelectElement>,
+              ) =>
                 setPublishFilter(
                   e.target.value as PublishFilter,
                 )
@@ -735,9 +748,9 @@ export default function AdminPage() {
             </select>
             <select
               value={sortKey}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                setSortKey(e.target.value as SortKey)
-              }
+              onChange={(
+                e: ChangeEvent<HTMLSelectElement>,
+              ) => setSortKey(e.target.value as SortKey)}
               style={selectFilter}
             >
               <option value="date_desc">
@@ -763,14 +776,22 @@ export default function AdminPage() {
           </div>
 
           {loading && (
-            <p style={{ color: "#9CA3AF", fontSize: "0.9rem" }}>
+            <p
+              style={{
+                color: "#9CA3AF",
+                fontSize: "0.9rem",
+              }}
+            >
               Загрузка…
             </p>
           )}
 
           {!loading && items.length === 0 && (
             <p
-              style={{ color: "#9CA3AF", fontSize: "0.9rem" }}
+              style={{
+                color: "#9CA3AF",
+                fontSize: "0.9rem",
+              }}
             >
               Пока нет заявок.
             </p>
@@ -839,15 +860,16 @@ export default function AdminPage() {
                   </thead>
                   <tbody>
                     {sortedItems.map((item, idx) => {
-                      const hasPhoto =
-                        item.photos &&
-                        item.photos.length > 0 &&
-                        item.photos[0];
-                      const thumb = hasPhoto
-                        ? getFullPhotoUrl(
-                            item.photos![0] as string,
-                          )
-                        : null;
+                      const normalized = normalizePhotos(
+                        item.photos ?? [],
+                      );
+                      const thumb =
+                        normalized.length > 0
+                          ? getFullPhotoUrl(
+                              normalized[0] as string,
+                            )
+                          : "";
+
                       const isEven = idx % 2 === 0;
 
                       return (
@@ -916,6 +938,12 @@ export default function AdminPage() {
                                     height: "100%",
                                     objectFit: "cover",
                                     display: "block",
+                                  }}
+                                  onError={(e) => {
+                                    // если файла реально нет (404),
+                                    // не показываем битую иконку
+                                    e.currentTarget.style.display =
+                                      "none";
                                   }}
                                 />
                               </div>
@@ -1132,18 +1160,18 @@ export default function AdminPage() {
                                   deletingId === item.id
                                 }
                                 style={{
-                                  padding: "4px 9px",
+                                  padding: "4px 11px",
                                   borderRadius: 999,
                                   border:
-                                    "1px solid rgba(248,113,113,0.8)",
-                                  background: "transparent",
+                                    "1px solid rgba(248,113,113,0.7)",
+                                  background:
+                                    "transparent",
                                   color: "#fecaca",
                                   cursor: "pointer",
                                   fontSize: "0.78rem",
                                   opacity:
-                                    deletingId ===
-                                    item.id
-                                      ? 0.6
+                                    deletingId === item.id
+                                      ? 0.7
                                       : 1,
                                 }}
                               >
@@ -1161,462 +1189,264 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {selected && (
+      {selected && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            background: "rgba(5,5,11,0.94)",
+            backdropFilter: "blur(18px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "12px",
+          }}
+          onClick={() => setSelected(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: 620,
+              width: "100%",
+              borderRadius: 24,
+              border: "1px solid rgba(248,113,113,0.7)",
+              background:
+                "linear-gradient(145deg, rgba(7,10,20,0.98), rgba(15,23,42,0.94))",
+              padding: "18px 18px 20px",
+              boxShadow:
+                "0 26px 80px rgba(0,0,0,0.96), 0 0 0 1px rgba(15,23,42,0.96)",
+              position: "relative",
+            }}
+          >
             <div
               style={{
-                position: "fixed",
+                position: "absolute",
                 inset: 0,
-                zIndex: 60,
-                background: "rgba(2,6,23,0.92)",
-                backdropFilter: "blur(18px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "12px",
+                borderRadius: 24,
+                border: "1px solid transparent",
+                background:
+                  "linear-gradient(120deg, rgba(248,113,113,0.9), rgba(251,191,36,0.7), rgba(248,113,113,0.9)) border-box",
+                WebkitMask:
+                  "linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0)",
+                WebkitMaskComposite: "xor",
+                pointerEvents: "none",
+                opacity: 0.5,
               }}
-              onClick={() => setSelected(null)}
+            />
+
+            <div
+              style={{
+                position: "relative",
+                zIndex: 1,
+              }}
             >
               <div
-                onClick={(e) => e.stopPropagation()}
                 style={{
-                  maxWidth: 780,
-                  width: "100%",
-                  maxHeight: "92vh",
-                  overflowY: "auto",
-                  borderRadius: 24,
-                  border:
-                    "1px solid rgba(248,113,113,0.7)",
-                  background:
-                    "linear-gradient(145deg, rgba(7,10,20,0.98), rgba(15,23,42,0.94))",
-                  padding: "18px 20px 20px",
-                  boxShadow:
-                    "0 26px 80px rgba(0,0,0,0.96), 0 0 0 1px rgba(15,23,42,0.96)",
-                  fontSize: "0.85rem",
-                  position: "relative",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  alignItems: "center",
+                  marginBottom: 8,
                 }}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: 24,
-                    border: "1px solid transparent",
-                    background:
-                      "linear-gradient(120deg, rgba(248,113,113,0.9), rgba(251,191,36,0.7), rgba(248,113,113,0.9)) border-box",
-                    WebkitMask:
-                      "linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0)",
-                    WebkitMaskComposite: "xor",
-                    pointerEvents: "none",
-                    opacity: 0.5,
-                  }}
-                />
-
-                <div
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                  }}
-                >
-                  <div
+                <div>
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 10,
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      background: "rgba(127,29,29,0.32)",
+                      fontSize: "0.7rem",
+                      color: "#fecaca",
                     }}
                   >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "0.78rem",
-                          color: "#6B7280",
-                          marginBottom: 2,
-                        }}
-                      >
-                        Заявка
-                      </div>
-                      <h2
-                        style={{
-                          margin: 0,
-                          fontSize: "1.1rem",
-                          color: "#e5e7eb",
-                        }}
-                      >
-                        #{selected.id} · {selected.title}
-                      </h2>
-                    </div>
-                    <button
-                      onClick={() => setSelected(null)}
+                    {categoryLabel[selected.category] ??
+                      selected.category}
+                  </span>
+                  <h2
+                    style={{
+                      margin: "6px 0 4px",
+                      fontSize: "1.1rem",
+                      color: "#e5e7eb",
+                    }}
+                  >
+                    {selected.title}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelected(null)}
+                  style={{
+                    background: "none",
+                    borderRadius: 999,
+                    border:
+                      "1px solid rgba(148,163,184,0.7)",
+                    color: "#9CA3AF",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                    padding: "4px 9px",
+                    backgroundColor: "rgba(15,23,42,0.96)",
+                    transition:
+                      "transform 0.14s ease-out, box-shadow 0.14s ease-out",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el =
+                      e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "translateY(-1px)";
+                    el.style.boxShadow =
+                      "0 10px 30px rgba(15,23,42,0.9)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el =
+                      e.currentTarget as HTMLButtonElement;
+                    el.style.transform = "none";
+                    el.style.boxShadow = "none";
+                  }}
+                >
+                  Закрыть ✕
+                </button>
+              </div>
+
+              {normalizePhotos(selected.photos).length > 0 && (
+                <div style={{ margin: "8px 0 12px" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "4 / 3",
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      border:
+                        "1px solid rgba(248,113,113,0.7)",
+                      backgroundColor: "#020617",
+                      marginBottom: 8,
+                      boxShadow:
+                        "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
+                    }}
+                  >
+                    <img
+                      src={getFullPhotoUrl(
+                        normalizePhotos(
+                          selected.photos,
+                        )[photoIndex] as string,
+                      )}
+                      alt={selected.title}
                       style={{
-                        background: "none",
-                        borderRadius: 999,
-                        border:
-                          "1px solid rgba(148,163,184,0.7)",
-                        color: "#9CA3AF",
-                        cursor: "pointer",
-                        fontSize: "0.9rem",
-                        padding: "4px 9px",
-                        backgroundColor:
-                          "rgba(15,23,42,0.96)",
-                        transition:
-                          "transform 0.14s ease-out, box-shadow 0.14s ease-out",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        display: "block",
                       }}
-                      onMouseEnter={(e) => {
-                        const el =
-                          e.currentTarget as HTMLButtonElement;
-                        el.style.transform =
-                          "translateY(-1px)";
-                        el.style.boxShadow =
-                          "0 10px 30px rgba(15,23,42,0.9)";
+                      onError={(e) => {
+                        e.currentTarget.style.display =
+                          "none";
                       }}
-                      onMouseLeave={(e) => {
-                        const el =
-                          e.currentTarget as HTMLButtonElement;
-                        el.style.transform = "none";
-                        el.style.boxShadow = "none";
+                    />
+                  </div>
+                  {normalizePhotos(selected.photos).length >
+                    1 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        overflowX: "auto",
+                        paddingBottom: 4,
                       }}
                     >
-                      Закрыть ✕
-                    </button>
-                  </div>
-
-                  {selected.photos &&
-                    selected.photos.length > 0 && (
-                      <div style={{ marginBottom: 14 }}>
-                        <div
+                      {normalizePhotos(
+                        selected.photos,
+                      ).map((p, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() =>
+                            setPhotoIndex(idx)
+                          }
                           style={{
-                            width: "100%",
-                            aspectRatio: "4 / 3",
-                            borderRadius: 16,
+                            width: 62,
+                            height: 62,
+                            borderRadius: 12,
                             overflow: "hidden",
                             border:
-                              "1px solid rgba(248,113,113,0.7)",
-                            backgroundColor: "#020617",
-                            marginBottom: 8,
-                            boxShadow:
-                              "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
+                              idx === photoIndex
+                                ? "1px solid #22c55e"
+                                : "1px solid rgba(148,163,184,0.5)",
+                            padding: 0,
+                            background: "transparent",
+                            cursor: "pointer",
+                            flex: "0 0 auto",
                           }}
                         >
                           <img
-                            src={getFullPhotoUrl(
-                              selected.photos[
-                                photoIndex
-                              ] as string,
-                            )}
-                            alt={selected.title}
+                            src={getFullPhotoUrl(p)}
+                            alt={`photo-${idx + 1}`}
                             style={{
                               width: "100%",
                               height: "100%",
-                              objectFit: "contain",
+                              objectFit: "cover",
                               display: "block",
                             }}
-                          />
-                        </div>
-                        {selected.photos.length > 1 && (
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 6,
-                              overflowX: "auto",
-                              paddingBottom: 4,
+                            onError={(e) => {
+                              e.currentTarget.style.display =
+                                "none";
                             }}
-                          >
-                            {selected.photos.map(
-                              (p, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() =>
-                                    setPhotoIndex(idx)
-                                  }
-                                  style={{
-                                    width: 64,
-                                    height: 64,
-                                    borderRadius: 14,
-                                    overflow: "hidden",
-                                    border:
-                                      idx === photoIndex
-                                        ? "1px solid #22c55e"
-                                        : "1px solid rgba(148,163,184,0.6)",
-                                    padding: 0,
-                                    background:
-                                      "transparent",
-                                    cursor: "pointer",
-                                    flex: "0 0 auto",
-                                  }}
-                                >
-                                  <img
-                                    src={getFullPhotoUrl(
-                                      p,
-                                    )}
-                                    alt={`photo-${idx + 1}`}
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                      display: "block",
-                                    }}
-                                  />
-                                </button>
-                              ),
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "minmax(0,1.1fr) minmax(0,1.2fr)",
-                      gap: 14,
-                      marginBottom: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "minmax(0,1fr)",
-                        gap: 8,
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Категория
-                        </div>
-                        <div>
-                          {categoryLabel[
-                            selected.category
-                          ] ?? selected.category}
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Состояние
-                        </div>
-                        <div>
-                          {selected.condition === "new"
-                            ? "Новый"
-                            : "Б/у"}
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Цена клиента
-                        </div>
-                        <div>
-                          {selected.price_client
-                            ? `${selected.price_client} грн`
-                            : "—"}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "minmax(0,1fr)",
-                        gap: 8,
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Город
-                        </div>
-                        <div>
-                          {selected.city || "—"}
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Контакт
-                        </div>
-                        <div>
-                          {selected.contact || "—"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {selected.problems &&
-                    selected.problems.length > 0 && (
-                      <div style={{ marginTop: 6 }}>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          Проблемы
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 6,
-                            marginTop: 4,
-                          }}
-                        >
-                          {selected.problems.map(
-                            (p, idx) => (
-                              <span
-                                key={idx}
-                                style={{
-                                  fontSize: "0.78rem",
-                                  padding: "2px 8px",
-                                  borderRadius: 999,
-                                  border:
-                                    "1px solid rgba(168,85,247,0.8)",
-                                  color: "#e9d5ff",
-                                  background:
-                                    "rgba(30,64,175,0.18)",
-                                }}
-                              >
-                                {p}
-                              </span>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                  {selected
-                    .problems_description && (
-                    <div style={{ marginTop: 8 }}>
-                      <div
-                        style={{
-                          color: "#9CA3AF",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        Описание проблем
-                      </div>
-                      <p
-                        style={{
-                          margin: "4px 0 0",
-                          fontSize: "0.85rem",
-                          color: "#e5e7eb",
-                        }}
-                      >
-                        {selected.problems_description}
-                      </p>
+                          />
+                        </button>
+                      ))}
                     </div>
                   )}
-
-                  <div
-                    style={{
-                      marginTop: 16,
-                      paddingTop: 10,
-                      borderTop:
-                        "1px solid rgba(31,41,55,0.9)",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        margin: "0 0 6px",
-                        fontSize: "0.9rem",
-                        color: "#e5e7eb",
-                      }}
-                    >
-                      Действия скупщика
-                    </h3>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "minmax(0,1fr) minmax(0,1fr)",
-                        gap: 12,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Статус
-                        </div>
-                        <div>
-                          {renderBuyerStatusLabel(
-                            selected.buyer_status,
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Цена скупщика
-                        </div>
-                        <div>
-                          {selected.buyer_price
-                            ? `${selected.buyer_price} грн`
-                            : "—"}
-                        </div>
-                      </div>
-                    </div>
-                    {selected.buyer_comment && (
-                      <div style={{ marginTop: 8 }}>
-                        <div
-                          style={{
-                            color: "#9CA3AF",
-                            fontSize: "0.78rem",
-                          }}
-                        >
-                          Комментарий скупщика
-                        </div>
-                        <p
-                          style={{
-                            margin: "4px 0 0",
-                            fontSize: "0.85rem",
-                            color: "#e5e7eb",
-                          }}
-                        >
-                          {selected.buyer_comment}
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </div>
+              )}
+
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#9CA3AF",
+                  margin: "4px 0",
+                }}
+              >
+                {selected.condition === "new"
+                  ? "Состояние: Новый"
+                  : `Состояние: Б/у${
+                      selected.problems &&
+                      selected.problems.length
+                        ? " — " +
+                          selected.problems.join(", ")
+                        : ""
+                    }`}
+              </p>
+
+              <p
+                style={{
+                  fontSize: "1rem",
+                  margin: "6px 0",
+                }}
+              >
+                Цена:{" "}
+                {selected.price_client ? (
+                  <strong style={{ color: "#22c55e" }}>
+                    {selected.price_client} грн
+                  </strong>
+                ) : (
+                  "по договоренности"
+                )}
+              </p>
+
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#9CA3AF",
+                  margin: "4px 0 10px",
+                }}
+              >
+                📍 {selected.city || "Город не указан"}
+              </p>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

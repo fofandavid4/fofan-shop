@@ -15,18 +15,17 @@ interface PublicItem {
 }
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://fofan-backend-production.up.railway.app";
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://fofan-backend-production.up.railway.app";
 
 function getApiFileUrl(path: string) {
-  // если backend отдаёт уже полный URL, просто возвращаем
+  if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  // если в БД лежит путь типа "/uploads/xxx.jpg"
   if (path.startsWith("/")) {
     return `${API_URL}${path}`;
   }
-  // если в БД лежит только имя файла "xxx.jpg"
   return `${API_URL}/uploads/${path}`;
 }
 
@@ -99,6 +98,15 @@ const outerGlow: CSSProperties = {
   pointerEvents: "none",
   opacity: 0.45,
 };
+
+/** Нормализуем массив фоток: только непустые строки */
+function normalizePhotos(photos?: string[] | null): string[] {
+  if (!Array.isArray(photos)) return [];
+  return photos
+    .filter((p) => typeof p === "string")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+}
 
 export default function BoardPage() {
   const [filter, setFilter] = useState<string | null>(null);
@@ -204,9 +212,7 @@ export default function BoardPage() {
             </button>
             <button
               style={
-                filter === "keyboard_mouse"
-                  ? chipActive
-                  : chipBase
+                filter === "keyboard_mouse" ? chipActive : chipBase
               }
               onClick={() => setFilter("keyboard_mouse")}
             >
@@ -243,13 +249,11 @@ export default function BoardPage() {
               }}
             >
               {items.map((item) => {
-                const photos = Array.isArray(item.photos)
-                  ? item.photos
-                  : [];
+                const photos = normalizePhotos(item.photos);
                 const hasPhotos = photos.length > 0;
                 const thumbnail = hasPhotos
                   ? getApiFileUrl(photos[0] as string)
-                  : null;
+                  : "";
 
                 return (
                   <div
@@ -291,7 +295,7 @@ export default function BoardPage() {
                     }}
                   >
                     <div>
-                      {thumbnail && (
+                      {thumbnail ? (
                         <div
                           style={{
                             width: "100%",
@@ -314,7 +318,31 @@ export default function BoardPage() {
                               objectFit: "cover",
                               display: "block",
                             }}
+                            onError={(e) => {
+                              // если файла нет (404), не показываем битую иконку
+                              e.currentTarget.style.display =
+                                "none";
+                            }}
                           />
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            width: "100%",
+                            aspectRatio: "4 / 3",
+                            borderRadius: 14,
+                            marginBottom: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "0.8rem",
+                            color: "#9CA3AF",
+                            border:
+                              "1px dashed rgba(148,163,184,0.5)",
+                            backgroundColor: "#020617",
+                          }}
+                        >
+                          нет фото
                         </div>
                       )}
 
@@ -539,8 +567,7 @@ export default function BoardPage() {
                   onMouseEnter={(e) => {
                     const el =
                       e.currentTarget as HTMLButtonElement;
-                    el.style.transform =
-                      "translateY(-1px)";
+                    el.style.transform = "translateY(-1px)";
                     el.style.boxShadow =
                       "0 10px 30px rgba(15,23,42,0.9)";
                   }}
@@ -555,48 +582,51 @@ export default function BoardPage() {
                 </button>
               </div>
 
-              {Array.isArray(selected.photos) &&
-                selected.photos.length > 0 && (
-                  <div style={{ margin: "8px 0 12px" }}>
-                    <div
+              {normalizePhotos(selected.photos).length > 0 && (
+                <div style={{ margin: "8px 0 12px" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "4 / 3",
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      border:
+                        "1px solid rgba(248,113,113,0.7)",
+                      backgroundColor: "#020617",
+                      marginBottom: 8,
+                      boxShadow:
+                        "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
+                    }}
+                  >
+                    <img
+                      src={getApiFileUrl(
+                        normalizePhotos(
+                          selected.photos,
+                        )[selectedPhotoIndex] as string,
+                      )}
+                      alt={selected.title}
                       style={{
                         width: "100%",
-                        aspectRatio: "4 / 3",
-                        borderRadius: 16,
-                        overflow: "hidden",
-                        border:
-                          "1px solid rgba(248,113,113,0.7)",
-                        backgroundColor: "#020617",
-                        marginBottom: 8,
-                        boxShadow:
-                          "0 0 26px rgba(248,113,113,0.3), 0 0 0 1px rgba(15,23,42,1)",
+                        height: "100%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
+                  {normalizePhotos(selected.photos).length > 1 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        overflowX: "auto",
+                        paddingBottom: 4,
                       }}
                     >
-                      <img
-                        src={getApiFileUrl(
-                          selected.photos[
-                            selectedPhotoIndex
-                          ] as string,
-                        )}
-                        alt={selected.title}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          display: "block",
-                        }}
-                      />
-                    </div>
-                    {selected.photos.length > 1 && (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 6,
-                          overflowX: "auto",
-                          paddingBottom: 4,
-                        }}
-                      >
-                        {selected.photos.map((p, idx) => (
+                      {normalizePhotos(selected.photos).map(
+                        (p, idx) => (
                           <button
                             key={idx}
                             type="button"
@@ -619,7 +649,7 @@ export default function BoardPage() {
                             }}
                           >
                             <img
-                              src={getApiFileUrl(p as string)}
+                              src={getApiFileUrl(p)}
                               alt={`photo-${idx + 1}`}
                               style={{
                                 width: "100%",
@@ -627,13 +657,18 @@ export default function BoardPage() {
                                 objectFit: "cover",
                                 display: "block",
                               }}
+                              onError={(e) => {
+                                e.currentTarget.style.display =
+                                  "none";
+                              }}
                             />
                           </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                        ),
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <p
                 style={{
